@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Design resilient microservices in Golang</title>
+		<meta name="author" content="Roman Kiselenko">
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="rkiselenko.dev">
+		<meta name="title" property="og:title" content="Design resilient microservices in Golang">
+		<meta name="description" property="og:description" content="Limiting the impact of service failures and latencies">
+		<meta property="og:url" content="https://rkiselenko.dev/blog/resilient-microservice/">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/resilient-microservice.jpg">
+		<meta name="twitter:card" content="summary">
+		<meta name="keywords" content="posts,docker,design,golang"/>
+		<meta name="twitter:site" content="@shindu666">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/resilient-microservice.jpg">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+		<link rel="manifest" href="/manifest.json" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
+		<style>/**
+ * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/chriskempson/tomorrow-theme
+ * @author Rose Pritchard
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #ccc;
+	background: none;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #999;
+}
+
+.token.punctuation {
+	color: #ccc;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #e2777a;
+}
+
+.token.function-name {
+	color: #6196cc;
+}
+
+.token.boolean,
+.token.number,
+.token.function {
+	color: #f08d49;
+}
+
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+	color: #f8c555;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #cc99cd;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+	color: #7ec699;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+	color: #67cdcc;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.inserted {
+	color: green;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+
+:root {
+	--font-family: 'Work Sans', sans-serif;
+	--font-family-monospace: "IBM Plex Mono", monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #333;
+
+	--background-color: #ffffff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #45a2ea;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #735063;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #C0C0C0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #bbbbbb;
+		--text-color-link-active: #818181;
+		--text-color-link-visited: #19a4e9;
+
+		--background-color: #15202b;
+	}
+
+	.github, .linkedin, .stackoverflow, .rss {
+		fill: white;
+	}
+
+	code {
+		background-color: var(--color-gray-50);
+		color: var(--background-color);
+		word-break: break-all;
+	}
+}
+
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+	min-width: 20em;
+}
+
+blockquote {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	padding-left: 15px;
+	border-left: 5px solid var(--text-color-link);
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+h1,h2,h3,h4 {
+	margin-bottom: 0;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p,li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+	font-weight: medium;
+	text-decoration: none;
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+
+p > a:after {
+     content: " " url(/img/anchor.svg);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre[class*="language-"] {
+	padding: 0.5em;
+	line-height: 1.2; /* 22px /16 */
+}
+pre,
+code {
+	font-family: var(--font-family-monospace);
+    /* border-radius: 5px; */
+	white-space: nowrap;
+	padding: 2px 2px 2px 2px;
+    font-size: 0.8em;
+}
+code[class*="language-"] {
+	padding: 0px;
+}
+
+pre,
+code[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	line-height: 1; /* 22px /16 */
+    font-size: 0.9em;
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.225; /* 22px /16 */
+	font-family: var(--font-family-monospace);
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+
+code {
+	background-color: var(--color-gray-50);
+	word-break: break-all;
+    border-radius: 3px;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 0.7em;
+	white-space: nowrap;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+
+.nav-item a[href]:hover {
+    text-decoration: underline;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* text-transform: capitalize; */
+	font-style: italic;
+}
+
+a[href]:visited.post-tag {
+	color: var(--text-color-link-visited);
+}
+
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+}
+.post-metadata time {
+	margin-right: 1em;
+	font-size: 0.85em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: .1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+.ava img {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+  max-width: 20%;
+}
+.ava {
+  width: 100%
+}
+
+/* .penguin {
+  margin-top: 16px;
+} */
+
+.penguin img {
+  width: 5%;
+  max-width: 10%;
+}
+
+img {
+  max-width: 100%;
+}
+img[width] {
+  width: auto; /* Defer to max-width */
+}
+img[width][height] {
+  height: auto; /* Preserve aspect ratio */
+}
+
+.codetitle {
+	clear: right;
+	float: right;
+	padding: .25em 0 .25em .5em;
+	border-radius: .25em .25em 0 0;
+	font-family: var(--font-family-monospace);
+	font-size: 0.85em; /* 12px /16 */
+}
+.codetitle-left {
+	float: left;
+	clear: left;
+	padding-left: 0;
+	padding-right: .5em;
+}
+.codetitle + pre {
+	clear: both;
+}
+.codetitle {
+	float: right;
+	margin: 0 2em 0 0;
+	padding: .25em 0;
+	background-color: transparent;
+	border-width: 0;
+	box-shadow: none;
+	font-size: 0.85em; /* 12px /16 */
+	font-weight: 200;
+}
+
+.codetitle-left {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+	bottom: -2px;
+}
+.codetitle-left + .codetitle-left {
+	clear: none;
+	margin-left: 2em;
+}
+/* Message Box */
+.message-box {
+	--color-message-box: #ffc;
+
+	display: block;
+	background-color: var(--color-message-box);
+	color: var(--color-gray-90);
+	padding: 1em 0.625em; /* 16px 10px /16 */
+}
+.message-box ol {
+	margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.message-box {
+		--color-message-box: #082840;
+	}
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+		<header>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+					<ul class="nav">
+						<li class="nav-item"><a href="/">Home</a></li>
+						<li class="nav-item"><a href="/blog/">Archive</a></li>
+						<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
+					<li class="nav-item">
+						<a href="https://github.com/roman-kiselenko/" target="_blank" title="@roman-kiselenko on GitHub">
+							<svg class="github" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://www.linkedin.com/in/roman-kiselenko/" target="_blank" title="roman-kiselenko on Linkedin">
+							<svg class="linkedin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
+							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/feed/feed.xml" target="_blank" title="roman-kiselenko rss">
+						 <svg class="rss" fill="#000000" height="20" width="20" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+								viewBox="-143 145 512 512" xml:space="preserve">
+							<path d="M113,145c-141.4,0-256,114.6-256,256s114.6,256,256,256s256-114.6,256-256S254.4,145,113,145z M43.1,518.7
+								c-6.2,6.2-14.7,9.9-24.1,9.9c-9.4,0-17.8-3.8-24-9.9c-6.2-6.2-10-14.6-10-23.9c0-9.4,3.8-17.8,10-24s14.6-10,24-10
+								c9.4,0,17.9,3.8,24,10c6.2,6.2,10,14.6,10,24C53,504.2,49.2,512.6,43.1,518.7z M104.8,529c-0.1-32.1-12.5-62.3-35.1-84.9
+								c-22.6-22.6-52.8-35.2-84.7-35.2V360c46.6,0,88.7,19,119.3,49.6c30.6,30.6,49.5,72.8,49.6,119.4H104.8z M192,529
+								c-0.1-114.2-92.8-207.1-206.9-207.1V273c70.6,0,134.5,28.7,180.8,75.1c46.3,46.4,75,110.3,75.1,180.9H192z"/>
+							</svg>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Design resilient microservices in Golang</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2023-08-14">14 August 2023</time></li>
+	<li><a href="/tags/docker/" class="post-tag">docker</a>, </li>
+	<li><a href="/tags/design/" class="post-tag">design</a>, </li>
+	<li><a href="/tags/golang/" class="post-tag">golang</a></li>
+</ul>
+
+<div class="message-box">
+    <p>“Always design a thing by considering it in its next larger context — a chair in a room, a room in a house, a house in an environment, an environment in a city plan” — Eliel Saarinen</p>
+</div>
+<p>If your company, like mine, implements the microservice architecture, it is designed so that one microservice calls another.
+In case if one service experiencing failure all upstreams of that service receive the same error.
+Problems in one service affect all upstreams, the nightmare of any engineer 🔥.</p>
+<p><picture><source type="image/gif" srcset="/img/8FbILUyAqn-800.gif 800w"><source type="image/avif" srcset="/img/8FbILUyAqn-800.avif 800w"><source type="image/webp" srcset="/img/8FbILUyAqn-800.webp 800w"><img alt="an example" loading="lazy" decoding="async" src="/img/8FbILUyAqn-800.png" width="800" height="165"></picture></p>
+<p>Let me explain it with a few simple diagrams. There is the bookstore an application where you can get some information about books, the <code>booksvc</code>, and the <code>storagesvc</code> provide that information.</p>
+<p>The simple diagram below reflect how usually services in a bound context work.</p>
+<p><picture><source type="image/gif" srcset="/img/wbncPqqBKB-800.gif 800w"><source type="image/avif" srcset="/img/wbncPqqBKB-800.avif 800w"><source type="image/webp" srcset="/img/wbncPqqBKB-800.webp 800w"><img alt="an example of microservice architecture" loading="lazy" decoding="async" src="/img/wbncPqqBKB-800.png" width="800" height="133"></picture></p>
+<ul>
+<li>Client (any kind of client like web, ios or android application) sends a request, it passthrough <code>booksvc</code> and reaches <code>storagesvc</code>.</li>
+<li>The <code>storagesvc</code> request the database.</li>
+<li><code>storagesvc</code> processes data and returns it to the <code>booksvc</code>.</li>
+</ul>
+<p>Everything is good, so far 😻.</p>
+<p>Now imagine something happens with the database. The database becomes unavailable.
+That situation is urgent. Our bookstore is unable to provide any service. The client receives errors continuously.</p>
+<p><picture><source type="image/gif" srcset="/img/X4pPua5IfM-800.gif 800w"><source type="image/avif" srcset="/img/X4pPua5IfM-800.avif 800w"><source type="image/webp" srcset="/img/X4pPua5IfM-800.webp 800w"><img alt="an example of microservice architecture" loading="lazy" decoding="async" src="/img/X4pPua5IfM-800.png" width="800" height="136"></picture></p>
+<p>A good engineer can predict that kind of situation and use different patterns to avoid things like this.
+I will show you a few patterns, those patterns can be used separately or all together it depends on the particular application requirements.</p>
+<h2 id="jump-to" tabindex="-1">Jump to <a class="header-anchor" href="#jump-to">#</a></h2>
+<ul>
+<li><a href="#retry">Retry</a></li>
+<li><a href="#circuit-breaker">Circuit Breaker</a></li>
+<li><a href="#all-things-together">All together</a></li>
+</ul>
+<h2 id="code" tabindex="-1">Code <a class="header-anchor" href="#code">#</a></h2>
+<p>We need some testing stage, lets create one:</p>
+<ol>
+<li><code>mkdir -p circuitbreaker</code></li>
+<li><code>cd circuitbreaker</code></li>
+<li>create files <code>docker-compose.yaml</code>, <code>Dockerfile.booksvc</code>, <code>Dockerfile.storagesvc</code>, <code>pkg/recache/recache.go</code>, <code>storagesvc.go</code>, <code>go.mod</code></li>
+</ol>
+<div class="codetitle codetitle-left"><b>docker-compose.yaml </b></div>
+<pre class="language-yaml" tabindex="0"><code class="language-yaml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">database</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> postgres<span class="token punctuation">:</span><span class="token number">12.8</span>
+    <span class="token key atrule">restart</span><span class="token punctuation">:</span> always
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> POSTGRES_USER=pg
+      <span class="token punctuation">-</span> POSTGRES_PASSWORD=pass
+      <span class="token punctuation">-</span> POSTGRES_DB=crud
+    <span class="token key atrule">ports</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> 5432<span class="token punctuation">:</span><span class="token number">5432</span>
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+  <span class="token key atrule">redis</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> <span class="token string">'bitnami/redis:latest'</span>
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> ALLOW_EMPTY_PASSWORD=yes
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+  <span class="token key atrule">booksvc</span><span class="token punctuation">:</span>
+    <span class="token key atrule">build</span><span class="token punctuation">:</span>
+      <span class="token key atrule">context</span><span class="token punctuation">:</span> .
+      <span class="token key atrule">dockerfile</span><span class="token punctuation">:</span> ./Dockerfile.booksvc
+    <span class="token key atrule">ports</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"8081:8081"</span>
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token key atrule">REDIS_ADDR</span><span class="token punctuation">:</span> redis<span class="token punctuation">:</span><span class="token number">6379</span>
+      <span class="token key atrule">HTTP_PORT</span><span class="token punctuation">:</span> <span class="token string">":8081"</span>
+    <span class="token key atrule">depends_on</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> redis
+      <span class="token punctuation">-</span> database
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+  <span class="token key atrule">storagesvc</span><span class="token punctuation">:</span>
+    <span class="token key atrule">build</span><span class="token punctuation">:</span>
+      <span class="token key atrule">context</span><span class="token punctuation">:</span> .
+      <span class="token key atrule">dockerfile</span><span class="token punctuation">:</span> ./Dockerfile.storagesvc
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token key atrule">HTTP_PORT</span><span class="token punctuation">:</span> <span class="token string">":8082"</span>
+    <span class="token key atrule">depends_on</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> booksvc
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+<span class="token key atrule">networks</span><span class="token punctuation">:</span>
+   <span class="token key atrule">test_network</span><span class="token punctuation">:</span>
+        <span class="token key atrule">driver</span><span class="token punctuation">:</span> bridge</code></pre>
+<div class="codetitle codetitle-left"><b>Dockerfile.booksvc </b></div>
+<pre class="language-dockerfile" tabindex="0"><code class="language-dockerfile"><span class="token instruction"><span class="token keyword">FROM</span> golang:1.21</span>
+<span class="token instruction"><span class="token keyword">RUN</span> mkdir /app</span>
+<span class="token instruction"><span class="token keyword">COPY</span> . /app</span>
+<span class="token instruction"><span class="token keyword">WORKDIR</span> /app</span>
+<span class="token instruction"><span class="token keyword">RUN</span> go mod download</span>
+<span class="token instruction"><span class="token keyword">RUN</span> go build -o booksvc booksvc.go</span>
+
+<span class="token instruction"><span class="token keyword">CMD</span> <span class="token string">"/app/booksvc"</span></span></code></pre>
+<div class="codetitle codetitle-left"><b>Dockerfile.storagesvc </b></div>
+<pre class="language-dockerfile" tabindex="0"><code class="language-dockerfile"><span class="token instruction"><span class="token keyword">FROM</span> golang:1.21</span>
+<span class="token instruction"><span class="token keyword">RUN</span> mkdir /app</span>
+<span class="token instruction"><span class="token keyword">COPY</span> . /app</span>
+<span class="token instruction"><span class="token keyword">WORKDIR</span> /app</span>
+<span class="token instruction"><span class="token keyword">RUN</span> go mod download</span>
+<span class="token instruction"><span class="token keyword">RUN</span> go build -o storagesvc storagesvc.go</span>
+
+<span class="token instruction"><span class="token keyword">CMD</span> <span class="token string">"/app/storagesvc"</span></span></code></pre>
+<div class="codetitle codetitle-left"><b>pkg/recache/recache.go </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> recache
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"time"</span>
+
+	rds <span class="token string">"github.com/redis/go-redis/v9"</span>
+	<span class="token string">"golang.org/x/net/context"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">type</span> Redis <span class="token keyword">interface</span> <span class="token punctuation">{</span>
+	<span class="token function">Get</span><span class="token punctuation">(</span>ctx context<span class="token punctuation">.</span>Context<span class="token punctuation">,</span> key <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span>
+	<span class="token function">Put</span><span class="token punctuation">(</span>ctx context<span class="token punctuation">.</span>Context<span class="token punctuation">,</span> key <span class="token builtin">string</span><span class="token punctuation">,</span> value <span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token builtin">error</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">type</span> service <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	c <span class="token operator">*</span>rds<span class="token punctuation">.</span>Client
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">New</span><span class="token punctuation">(</span>options <span class="token operator">*</span>rds<span class="token punctuation">.</span>Options<span class="token punctuation">)</span> Redis <span class="token punctuation">{</span>
+	redisClient <span class="token operator">:=</span> rds<span class="token punctuation">.</span><span class="token function">NewClient</span><span class="token punctuation">(</span>options<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> <span class="token operator">&amp;</span>service<span class="token punctuation">{</span>c<span class="token punctuation">:</span> redisClient<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>service<span class="token punctuation">)</span> <span class="token function">Get</span><span class="token punctuation">(</span>ctx context<span class="token punctuation">.</span>Context<span class="token punctuation">,</span> key <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	status <span class="token operator">:=</span> s<span class="token punctuation">.</span>c<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> key<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> status<span class="token punctuation">.</span><span class="token function">Result</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>service<span class="token punctuation">)</span> <span class="token function">Put</span><span class="token punctuation">(</span>ctx context<span class="token punctuation">.</span>Context<span class="token punctuation">,</span> key <span class="token builtin">string</span><span class="token punctuation">,</span> value <span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+	status <span class="token operator">:=</span> s<span class="token punctuation">.</span>c<span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> key<span class="token punctuation">,</span> value<span class="token punctuation">,</span> time<span class="token punctuation">.</span>Minute<span class="token operator">*</span><span class="token number">10</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span> status<span class="token punctuation">.</span><span class="token function">Err</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code></pre>
+<div class="codetitle codetitle-left"><b>storagesvc.go </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"log"</span>
+	<span class="token string">"log/slog"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"os"</span>
+
+	<span class="token string">"github.com/labstack/echo/v4"</span>
+	<span class="token string">"gorm.io/driver/postgres"</span>
+	<span class="token string">"gorm.io/gorm"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">var</span> <span class="token punctuation">(</span>
+	logger <span class="token operator">=</span> slog<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>slog<span class="token punctuation">.</span><span class="token function">NewJSONHandler</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>Stdout<span class="token punctuation">,</span> <span class="token operator">&amp;</span>slog<span class="token punctuation">.</span>HandlerOptions<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">WithAttrs</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span>slog<span class="token punctuation">.</span>Attr<span class="token punctuation">{</span>slog<span class="token punctuation">.</span><span class="token function">String</span><span class="token punctuation">(</span><span class="token string">"app"</span><span class="token punctuation">,</span> <span class="token string">"storagesvc"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">type</span> book <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	Id     <span class="token builtin">int</span>    <span class="token string">`json:"id" gorm:"primaryKey"`</span>
+	Title  <span class="token builtin">string</span> <span class="token string">`json:"title"`</span>
+	Author <span class="token builtin">string</span> <span class="token string">`json:"author"`</span>
+	Desc   <span class="token builtin">string</span> <span class="token string">`json:"desc"`</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token comment">// Echo instance</span>
+	e <span class="token operator">:=</span> echo<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	db<span class="token punctuation">,</span> err <span class="token operator">:=</span> gorm<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span>postgres<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span><span class="token string">"postgres://pg:pass@database:5432/crud"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>gorm<span class="token punctuation">.</span>Config<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalln</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	db<span class="token punctuation">.</span><span class="token function">AutoMigrate</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>book<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+    <span class="token comment">// Seed database with some data</span>
+	<span class="token keyword">if</span> result <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>book<span class="token punctuation">{</span>Title<span class="token punctuation">:</span> <span class="token string">"One book"</span><span class="token punctuation">,</span> Author<span class="token punctuation">:</span> <span class="token string">"John Doe"</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> result<span class="token punctuation">.</span>Error <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> result<span class="token punctuation">.</span>Error<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"cant create data"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> result <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>book<span class="token punctuation">{</span>Title<span class="token punctuation">:</span> <span class="token string">"Second book"</span><span class="token punctuation">,</span> Author<span class="token punctuation">:</span> <span class="token string">"Jane Doe"</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> result<span class="token punctuation">.</span>Error <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> result<span class="token punctuation">.</span>Error<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"cant create data"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// Routes</span>
+	e<span class="token punctuation">.</span><span class="token function">GET</span><span class="token punctuation">(</span><span class="token string">"/books"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span>c echo<span class="token punctuation">.</span>Context<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+		<span class="token keyword">var</span> books <span class="token punctuation">[</span><span class="token punctuation">]</span>book
+		<span class="token keyword">if</span> result <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Find</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>books<span class="token punctuation">)</span><span class="token punctuation">;</span> result<span class="token punctuation">.</span>Error <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+			logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> result<span class="token punctuation">.</span>Error<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"cant fetch data"</span><span class="token punctuation">)</span>
+			<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">,</span> <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token string">"ops, I cant process you request"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+		<span class="token punctuation">}</span>
+		logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"got books"</span><span class="token punctuation">,</span> books<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"data fetched"</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> books<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+	<span class="token comment">// Start server</span>
+	e<span class="token punctuation">.</span>Logger<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token string">":8082"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code></pre>
+<div class="codetitle codetitle-left"><b>go.mod </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go">module example
+
+<span class="token keyword">go</span> <span class="token number">1.21</span>
+
+require <span class="token punctuation">(</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>cenkalti<span class="token operator">/</span>backoff<span class="token operator">/</span>v4 v4<span class="token punctuation">.</span><span class="token number">2.1</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>labstack<span class="token operator">/</span>echo<span class="token operator">/</span>v4 v4<span class="token punctuation">.</span><span class="token number">10.2</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>redis<span class="token operator">/</span><span class="token keyword">go</span><span class="token operator">-</span>redis<span class="token operator">/</span>v9 v9<span class="token punctuation">.</span><span class="token number">0.5</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>sony<span class="token operator">/</span>gobreaker v0<span class="token punctuation">.</span><span class="token number">5.0</span>
+	golang<span class="token punctuation">.</span>org<span class="token operator">/</span>x<span class="token operator">/</span>net v0<span class="token punctuation">.</span><span class="token number">9.0</span>
+	gorm<span class="token punctuation">.</span>io<span class="token operator">/</span>driver<span class="token operator">/</span>postgres v1<span class="token punctuation">.</span><span class="token number">5.2</span>
+	gorm<span class="token punctuation">.</span>io<span class="token operator">/</span>gorm v1<span class="token punctuation">.</span><span class="token number">25.3</span>
+<span class="token punctuation">)</span>
+
+require <span class="token punctuation">(</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>cespare<span class="token operator">/</span>xxhash<span class="token operator">/</span>v2 v2<span class="token punctuation">.</span><span class="token number">2.0</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>dgryski<span class="token operator">/</span><span class="token keyword">go</span><span class="token operator">-</span>rendezvous v0<span class="token punctuation">.</span><span class="token number">0.0</span><span class="token operator">-</span><span class="token number">20200823014737</span><span class="token operator">-</span>9f7001d12a5f <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>jackc<span class="token operator">/</span>pgpassfile v1<span class="token punctuation">.</span><span class="token number">0.0</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>jackc<span class="token operator">/</span>pgservicefile v0<span class="token punctuation">.</span><span class="token number">0.0</span><span class="token operator">-</span><span class="token number">20221227161230</span><span class="token operator">-</span>091c0ba34f0a <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>jackc<span class="token operator">/</span>pgx<span class="token operator">/</span>v5 v5<span class="token punctuation">.</span><span class="token number">3.1</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>jinzhu<span class="token operator">/</span>inflection v1<span class="token punctuation">.</span><span class="token number">0.0</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>jinzhu<span class="token operator">/</span>now v1<span class="token punctuation">.</span><span class="token number">1.5</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>labstack<span class="token operator">/</span>gommon v0<span class="token punctuation">.</span><span class="token number">4.0</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>mattn<span class="token operator">/</span><span class="token keyword">go</span><span class="token operator">-</span>colorable v0<span class="token punctuation">.</span><span class="token number">1.13</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>mattn<span class="token operator">/</span><span class="token keyword">go</span><span class="token operator">-</span>isatty v0<span class="token punctuation">.</span><span class="token number">0.17</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>valyala<span class="token operator">/</span>bytebufferpool v1<span class="token punctuation">.</span><span class="token number">0.0</span> <span class="token comment">// indirect</span>
+	github<span class="token punctuation">.</span>com<span class="token operator">/</span>valyala<span class="token operator">/</span>fasttemplate v1<span class="token punctuation">.</span><span class="token number">2.2</span> <span class="token comment">// indirect</span>
+	golang<span class="token punctuation">.</span>org<span class="token operator">/</span>x<span class="token operator">/</span>crypto v0<span class="token punctuation">.</span><span class="token number">8.0</span> <span class="token comment">// indirect</span>
+	golang<span class="token punctuation">.</span>org<span class="token operator">/</span>x<span class="token operator">/</span>sys v0<span class="token punctuation">.</span><span class="token number">7.0</span> <span class="token comment">// indirect</span>
+	golang<span class="token punctuation">.</span>org<span class="token operator">/</span>x<span class="token operator">/</span>text v0<span class="token punctuation">.</span><span class="token number">9.0</span> <span class="token comment">// indirect</span>
+<span class="token punctuation">)</span></code></pre>
+<h2 id="retry" tabindex="-1">Retry <a class="header-anchor" href="#retry">#</a></h2>
+<p>Let's start with a simple one, the <code>Retry</code>.
+We introduce the <code>Retry</code> logic in our <code>booksvc</code>, so the service will exponentially repeat a request to <code>storagesvc</code> while the client waits.</p>
+<p><picture><source type="image/gif" srcset="/img/bMj0tdnCNi-800.gif 800w"><source type="image/avif" srcset="/img/bMj0tdnCNi-800.avif 800w"><source type="image/webp" srcset="/img/bMj0tdnCNi-800.webp 800w"><img alt="An example with exponential retry" loading="lazy" decoding="async" src="/img/bMj0tdnCNi-800.png" width="800" height="201"></picture></p>
+<p>If our database fails to serve queries <code>booksvc</code> will wait and try again and again.</p>
+<div class="codetitle codetitle-left"><b>booksvc.go </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"encoding/json"</span>
+	<span class="token string">"errors"</span>
+	<span class="token string">"io/ioutil"</span>
+	<span class="token string">"log/slog"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"os"</span>
+
+	<span class="token string">"example/pkg/recache"</span>
+
+	<span class="token punctuation">.</span> <span class="token string">"github.com/cenkalti/backoff/v4"</span>
+	<span class="token string">"github.com/labstack/echo/v4"</span>
+	rds <span class="token string">"github.com/redis/go-redis/v9"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">var</span> <span class="token punctuation">(</span>
+	storagesvc <span class="token operator">=</span> <span class="token string">"http://storagesvc:8082/books"</span>
+	cacheKey   <span class="token operator">=</span> <span class="token string">"item"</span>
+	logger     <span class="token operator">=</span> slog<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>
+		slog<span class="token punctuation">.</span><span class="token function">NewJSONHandler</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>Stdout<span class="token punctuation">,</span> <span class="token operator">&amp;</span>slog<span class="token punctuation">.</span>HandlerOptions<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">WithAttrs</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span>slog<span class="token punctuation">.</span>Attr<span class="token punctuation">{</span>slog<span class="token punctuation">.</span><span class="token function">String</span><span class="token punctuation">(</span><span class="token string">"app"</span><span class="token punctuation">,</span> <span class="token string">"booksvc"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">type</span> svc <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	storageSvcPath <span class="token builtin">string</span>
+	cache          recache<span class="token punctuation">.</span>Redis
+	httpClient     <span class="token operator">*</span>http<span class="token punctuation">.</span>Client
+<span class="token punctuation">}</span>
+
+<span class="token comment">// DefaultInitialInterval     = 500 * time.Millisecond</span>
+<span class="token comment">// DefaultRandomizationFactor = 0.5</span>
+<span class="token comment">// DefaultMultiplier          = 1.5</span>
+<span class="token comment">// DefaultMaxInterval         = 60 * time.Second</span>
+<span class="token comment">// DefaultMaxElapsedTime      = 15 * time.Minute</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token comment">// Echo instance</span>
+	e <span class="token operator">:=</span> echo<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token comment">// Initialize storage service</span>
+	storageSvc <span class="token operator">:=</span> svc<span class="token punctuation">{</span>
+		storageSvcPath<span class="token punctuation">:</span> storagesvc<span class="token punctuation">,</span>
+		httpClient<span class="token punctuation">:</span>     <span class="token operator">&amp;</span>http<span class="token punctuation">.</span>Client<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+		cache<span class="token punctuation">:</span> recache<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>rds<span class="token punctuation">.</span>Options<span class="token punctuation">{</span>
+			Addr<span class="token punctuation">:</span> <span class="token string">"redis:6379"</span><span class="token punctuation">,</span>
+			DB<span class="token punctuation">:</span>   <span class="token number">0</span><span class="token punctuation">,</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">}</span>
+	<span class="token comment">// Routes</span>
+	e<span class="token punctuation">.</span><span class="token function">GET</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">,</span> storageSvc<span class="token punctuation">.</span>mainHandler<span class="token punctuation">)</span>
+	<span class="token comment">// Start server</span>
+	e<span class="token punctuation">.</span>Logger<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token string">":8081"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Root HTTP Handler of booksvc</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">mainHandler</span><span class="token punctuation">(</span>c echo<span class="token punctuation">.</span>Context<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> <span class="token punctuation">(</span>
+		err   <span class="token builtin">error</span>
+		books <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	<span class="token punctuation">)</span>
+    <span class="token comment">// Operation to retry</span>
+    <span class="token comment">// here we retry our request</span>
+	operation <span class="token operator">:=</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+		logger<span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"client: get books"</span><span class="token punctuation">)</span>
+		books<span class="token punctuation">,</span> err <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">getBooks</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+			logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Error</span><span class="token punctuation">(</span><span class="token string">"client: error"</span><span class="token punctuation">)</span>
+			<span class="token keyword">return</span> err
+		<span class="token punctuation">}</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">}</span>
+    <span class="token comment">// Actual retry call, if at the end retry fail we return an error</span>
+	<span class="token keyword">if</span> err <span class="token operator">=</span> <span class="token function">Retry</span><span class="token punctuation">(</span>operation<span class="token punctuation">,</span> <span class="token function">NewExponentialBackOff</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Error</span><span class="token punctuation">(</span><span class="token string">"client: error"</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">,</span> <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token string">"ops, I cant process you request"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> books<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Call storagesvc</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">getBooks</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	req<span class="token punctuation">,</span> err <span class="token operator">:=</span> http<span class="token punctuation">.</span><span class="token function">NewRequest</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>MethodGet<span class="token punctuation">,</span> s<span class="token punctuation">.</span>storageSvcPath<span class="token punctuation">,</span> <span class="token boolean">nil</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	req<span class="token punctuation">.</span>Header<span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span><span class="token string">"Content-Type"</span><span class="token punctuation">,</span> <span class="token string">"application/json"</span><span class="token punctuation">)</span>
+	res<span class="token punctuation">,</span> err <span class="token operator">:=</span> s<span class="token punctuation">.</span>httpClient<span class="token punctuation">.</span><span class="token function">Do</span><span class="token punctuation">(</span>req<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> res<span class="token punctuation">.</span>StatusCode <span class="token operator">==</span> http<span class="token punctuation">.</span>StatusInternalServerError <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> errors<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token string">"bad response code"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	body<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> ioutil<span class="token punctuation">.</span><span class="token function">ReadAll</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>Body<span class="token punctuation">)</span>
+	<span class="token keyword">var</span> books <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span>body<span class="token punctuation">,</span> <span class="token operator">&amp;</span>books<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> books<span class="token punctuation">,</span> <span class="token boolean">nil</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Stop the database container <code>docker stop circutbreaker-database-1</code> and check by querying the <code>booksvc</code> with <code>curl -s http://localhost:8081/</code>. You'll see <code>curl</code> hangs and requests to <code>storagesvc</code> continuously repeated in the logs.</p>
+<h2 id="circuit-breaker" tabindex="-1">Circuit Breaker <a class="header-anchor" href="#circuit-breaker">#</a></h2>
+<p>Now the <a href="https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern"><code>circuit breaker</code></a>
+That pattern we'll use with <code>Redis</code> cache, in the <code>booksvc</code>, we add the <code>circuit breaker</code>. Our cache will store the last successful request to <code>storagesvc</code>, and if the <code>circuit breaker</code> persists in an <code>open state</code>, we serve the data from the cache.</p>
+<p><picture><source type="image/gif" srcset="/img/D9UvZoeyjj-800.gif 800w"><source type="image/avif" srcset="/img/D9UvZoeyjj-800.avif 800w"><source type="image/webp" srcset="/img/D9UvZoeyjj-800.webp 800w"><img alt="An example with circutbreaker" loading="lazy" decoding="async" src="/img/D9UvZoeyjj-800.png" width="800" height="297"></picture></p>
+<div class="codetitle codetitle-left"><b>booksvc.go </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"context"</span>
+	<span class="token string">"encoding/json"</span>
+	<span class="token string">"errors"</span>
+	<span class="token string">"io/ioutil"</span>
+	<span class="token string">"log/slog"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"os"</span>
+	<span class="token string">"time"</span>
+
+	<span class="token string">"example/pkg/recache"</span>
+
+	<span class="token string">"github.com/labstack/echo/v4"</span>
+	rds <span class="token string">"github.com/redis/go-redis/v9"</span>
+	<span class="token string">"github.com/sony/gobreaker"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">var</span> <span class="token punctuation">(</span>
+	storagesvc <span class="token operator">=</span> <span class="token string">"http://storagesvc:8082/books"</span>
+	cacheKey   <span class="token operator">=</span> <span class="token string">"item"</span>
+	logger     <span class="token operator">=</span> slog<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>
+		slog<span class="token punctuation">.</span><span class="token function">NewTextHandler</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>Stdout<span class="token punctuation">,</span> <span class="token operator">&amp;</span>slog<span class="token punctuation">.</span>HandlerOptions<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">WithAttrs</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span>slog<span class="token punctuation">.</span>Attr<span class="token punctuation">{</span>slog<span class="token punctuation">.</span><span class="token function">String</span><span class="token punctuation">(</span><span class="token string">"app"</span><span class="token punctuation">,</span> <span class="token string">"booksvc"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">)</span>
+	cb <span class="token operator">*</span>gobreaker<span class="token punctuation">.</span>CircuitBreaker
+<span class="token punctuation">)</span>
+
+<span class="token keyword">type</span> svc <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	storageSvcPath <span class="token builtin">string</span>
+	cache          recache<span class="token punctuation">.</span>Redis
+	httpClient     <span class="token operator">*</span>http<span class="token punctuation">.</span>Client
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> st gobreaker<span class="token punctuation">.</span>Settings
+	st<span class="token punctuation">.</span>Name <span class="token operator">=</span> <span class="token string">"HTTP GET"</span>
+	st<span class="token punctuation">.</span>Timeout <span class="token operator">=</span> time<span class="token punctuation">.</span>Second <span class="token operator">*</span> <span class="token number">5</span>
+	st<span class="token punctuation">.</span>Interval <span class="token operator">=</span> time<span class="token punctuation">.</span>Second <span class="token operator">*</span> <span class="token number">10</span>
+	st<span class="token punctuation">.</span>ReadyToTrip <span class="token operator">=</span> <span class="token keyword">func</span><span class="token punctuation">(</span>counts gobreaker<span class="token punctuation">.</span>Counts<span class="token punctuation">)</span> <span class="token builtin">bool</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> counts<span class="token punctuation">.</span>ConsecutiveFailures <span class="token operator">></span> <span class="token number">0</span>
+	<span class="token punctuation">}</span>
+
+	cb <span class="token operator">=</span> gobreaker<span class="token punctuation">.</span><span class="token function">NewCircuitBreaker</span><span class="token punctuation">(</span>st<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token comment">// Echo instance</span>
+	e <span class="token operator">:=</span> echo<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token comment">// Initialize storage service</span>
+	storageSvc <span class="token operator">:=</span> svc<span class="token punctuation">{</span>
+		storageSvcPath<span class="token punctuation">:</span> storagesvc<span class="token punctuation">,</span>
+		httpClient<span class="token punctuation">:</span>     <span class="token operator">&amp;</span>http<span class="token punctuation">.</span>Client<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+		cache<span class="token punctuation">:</span> recache<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>rds<span class="token punctuation">.</span>Options<span class="token punctuation">{</span>
+			Addr<span class="token punctuation">:</span> <span class="token string">"redis:6379"</span><span class="token punctuation">,</span>
+			DB<span class="token punctuation">:</span>   <span class="token number">0</span><span class="token punctuation">,</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">}</span>
+	<span class="token comment">// Routes</span>
+	e<span class="token punctuation">.</span><span class="token function">GET</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">,</span> storageSvc<span class="token punctuation">.</span>mainHandler<span class="token punctuation">)</span>
+
+	<span class="token comment">// Start server</span>
+	e<span class="token punctuation">.</span>Logger<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token string">":8081"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Root HTTP Handler</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">mainHandler</span><span class="token punctuation">(</span>c echo<span class="token punctuation">.</span>Context<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> <span class="token punctuation">(</span>
+		err  <span class="token builtin">error</span>
+		data <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	<span class="token punctuation">)</span>
+
+	data<span class="token punctuation">,</span> err <span class="token operator">=</span> cb<span class="token punctuation">.</span><span class="token function">Execute</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>getBooks<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+        <span class="token comment">// If circuit breaker in the open state</span>
+        <span class="token comment">// serve last successful request from out cache</span>
+		<span class="token keyword">if</span> errors<span class="token punctuation">.</span><span class="token function">Is</span><span class="token punctuation">(</span>err<span class="token punctuation">,</span> gobreaker<span class="token punctuation">.</span>ErrOpenState<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			item<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> s<span class="token punctuation">.</span>cache<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span><span class="token function">Background</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cacheKey<span class="token punctuation">)</span>
+			<span class="token keyword">var</span> m <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+			json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">)</span>
+			<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> m<span class="token punctuation">)</span>
+		<span class="token punctuation">}</span>
+		logger<span class="token punctuation">.</span><span class="token function">With</span><span class="token punctuation">(</span><span class="token string">"error"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Error</span><span class="token punctuation">(</span><span class="token string">"client: error"</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">,</span> <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token string">"ops, I cant process you request"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	logger<span class="token punctuation">.</span><span class="token function">Info</span><span class="token punctuation">(</span><span class="token string">"client: got response"</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Storage Service</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">getBooks</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	req<span class="token punctuation">,</span> err <span class="token operator">:=</span> http<span class="token punctuation">.</span><span class="token function">NewRequest</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>MethodGet<span class="token punctuation">,</span> s<span class="token punctuation">.</span>storageSvcPath<span class="token punctuation">,</span> <span class="token boolean">nil</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	req<span class="token punctuation">.</span>Header<span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span><span class="token string">"Content-Type"</span><span class="token punctuation">,</span> <span class="token string">"application/json"</span><span class="token punctuation">)</span>
+
+	res<span class="token punctuation">,</span> err <span class="token operator">:=</span> s<span class="token punctuation">.</span>httpClient<span class="token punctuation">.</span><span class="token function">Do</span><span class="token punctuation">(</span>req<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> res<span class="token punctuation">.</span>StatusCode <span class="token operator">==</span> http<span class="token punctuation">.</span>StatusInternalServerError <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> errors<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token string">"bad response code"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	body<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> ioutil<span class="token punctuation">.</span><span class="token function">ReadAll</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>Body<span class="token punctuation">)</span>
+
+    <span class="token comment">// Put last successfull request to the cache</span>
+	<span class="token keyword">go</span> s<span class="token punctuation">.</span>cache<span class="token punctuation">.</span><span class="token function">Put</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span><span class="token function">Background</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cacheKey<span class="token punctuation">,</span> <span class="token function">string</span><span class="token punctuation">(</span>body<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">var</span> books <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span>body<span class="token punctuation">,</span> <span class="token operator">&amp;</span>books<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> books<span class="token punctuation">,</span> <span class="token boolean">nil</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Stop the database container <code>docker stop circutbreaker-database-1</code> and check by querying the <code>booksvc</code> with <code>curl -s http://localhost:8081/</code>. Half of the requests to <code>storagesvc</code> fail, and the second half is returned from the cache.</p>
+<h2 id="all-things-together" tabindex="-1">All things together <a class="header-anchor" href="#all-things-together">#</a></h2>
+<p>The last one is <code>Retry</code> with the <code>circuit breaker</code> in this case, our client shouldn't receive any errors and <code>circuit breaker</code> prevents retry from spamming our <code>storagesvc</code> continuously.</p>
+<p><picture><source type="image/gif" srcset="/img/AhmuUs3UmU-800.gif 800w"><source type="image/avif" srcset="/img/AhmuUs3UmU-800.avif 800w"><source type="image/webp" srcset="/img/AhmuUs3UmU-800.webp 800w"><img alt="An example with circutbreaker" loading="lazy" decoding="async" src="/img/AhmuUs3UmU-800.png" width="800" height="181"></picture></p>
+<div class="codetitle codetitle-left"><b>booksvc.go </b></div>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"context"</span>
+	<span class="token string">"encoding/json"</span>
+	<span class="token string">"errors"</span>
+	<span class="token string">"io/ioutil"</span>
+	<span class="token string">"log/slog"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"os"</span>
+	<span class="token string">"time"</span>
+
+	<span class="token string">"example/pkg/recache"</span>
+
+	<span class="token punctuation">.</span> <span class="token string">"github.com/cenkalti/backoff/v4"</span>
+	<span class="token string">"github.com/labstack/echo/v4"</span>
+	rds <span class="token string">"github.com/redis/go-redis/v9"</span>
+	<span class="token string">"github.com/sony/gobreaker"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">var</span> <span class="token punctuation">(</span>
+	storagesvc <span class="token operator">=</span> <span class="token string">"http://storagesvc:8082/books"</span>
+	cacheKey   <span class="token operator">=</span> <span class="token string">"item"</span>
+	logger     <span class="token operator">=</span> slog<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>
+		slog<span class="token punctuation">.</span><span class="token function">NewTextHandler</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span>Stdout<span class="token punctuation">,</span> <span class="token operator">&amp;</span>slog<span class="token punctuation">.</span>HandlerOptions<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">WithAttrs</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span>slog<span class="token punctuation">.</span>Attr<span class="token punctuation">{</span>slog<span class="token punctuation">.</span><span class="token function">String</span><span class="token punctuation">(</span><span class="token string">"app"</span><span class="token punctuation">,</span> <span class="token string">"booksvc"</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">)</span>
+	cb             <span class="token operator">*</span>gobreaker<span class="token punctuation">.</span>CircuitBreaker
+	badResponseErr <span class="token operator">=</span> errors<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token string">"bad response code"</span><span class="token punctuation">)</span>
+	maxRetries     <span class="token operator">=</span> <span class="token function">uint64</span><span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">type</span> svc <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	storageSvcPath <span class="token builtin">string</span>
+	cache          recache<span class="token punctuation">.</span>Redis
+	httpClient     <span class="token operator">*</span>http<span class="token punctuation">.</span>Client
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> st gobreaker<span class="token punctuation">.</span>Settings
+	st<span class="token punctuation">.</span>Name <span class="token operator">=</span> <span class="token string">"HTTP GET"</span>
+	st<span class="token punctuation">.</span>Timeout <span class="token operator">=</span> time<span class="token punctuation">.</span>Second <span class="token operator">*</span> <span class="token number">5</span>
+	st<span class="token punctuation">.</span>Interval <span class="token operator">=</span> time<span class="token punctuation">.</span>Second <span class="token operator">*</span> <span class="token number">10</span>
+	st<span class="token punctuation">.</span>ReadyToTrip <span class="token operator">=</span> <span class="token keyword">func</span><span class="token punctuation">(</span>counts gobreaker<span class="token punctuation">.</span>Counts<span class="token punctuation">)</span> <span class="token builtin">bool</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> counts<span class="token punctuation">.</span>ConsecutiveFailures <span class="token operator">></span> <span class="token number">0</span>
+	<span class="token punctuation">}</span>
+
+	cb <span class="token operator">=</span> gobreaker<span class="token punctuation">.</span><span class="token function">NewCircuitBreaker</span><span class="token punctuation">(</span>st<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token comment">// Echo instance</span>
+	e <span class="token operator">:=</span> echo<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token comment">// Initialize storage service</span>
+	storageSvc <span class="token operator">:=</span> svc<span class="token punctuation">{</span>
+		storageSvcPath<span class="token punctuation">:</span> storagesvc<span class="token punctuation">,</span>
+		httpClient<span class="token punctuation">:</span>     <span class="token operator">&amp;</span>http<span class="token punctuation">.</span>Client<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+		cache<span class="token punctuation">:</span> recache<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>rds<span class="token punctuation">.</span>Options<span class="token punctuation">{</span>
+			Addr<span class="token punctuation">:</span> <span class="token string">"redis:6379"</span><span class="token punctuation">,</span>
+			DB<span class="token punctuation">:</span>   <span class="token number">0</span><span class="token punctuation">,</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// Routes</span>
+	e<span class="token punctuation">.</span><span class="token function">GET</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">,</span> storageSvc<span class="token punctuation">.</span>mainHandler<span class="token punctuation">)</span>
+
+	<span class="token comment">// Start server</span>
+	e<span class="token punctuation">.</span>Logger<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token string">":8081"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Root HTTP Handler</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">mainHandler</span><span class="token punctuation">(</span>c echo<span class="token punctuation">.</span>Context<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> <span class="token punctuation">(</span>
+		err  <span class="token builtin">error</span>
+		data <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	<span class="token punctuation">)</span>
+
+	<span class="token comment">// Operation to retry</span>
+	operation <span class="token operator">:=</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+		data<span class="token punctuation">,</span> err <span class="token operator">=</span> cb<span class="token punctuation">.</span><span class="token function">Execute</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span>getBooks<span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+			logger<span class="token punctuation">.</span><span class="token function">Error</span><span class="token punctuation">(</span><span class="token string">"client: error"</span><span class="token punctuation">,</span> <span class="token string">"error"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+			<span class="token keyword">return</span> err
+		<span class="token punctuation">}</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> <span class="token function">Retry</span><span class="token punctuation">(</span>operation<span class="token punctuation">,</span> <span class="token function">WithMaxRetries</span><span class="token punctuation">(</span><span class="token function">NewExponentialBackOff</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> maxRetries<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token comment">// If max retry count exceed we get data from cache</span>
+		item<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> s<span class="token punctuation">.</span>cache<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span><span class="token function">Background</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cacheKey<span class="token punctuation">)</span>
+		<span class="token keyword">var</span> m <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+		json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> m<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">if</span> data <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusOK<span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">return</span> c<span class="token punctuation">.</span><span class="token function">JSON</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">,</span> <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"error"</span><span class="token punctuation">:</span> <span class="token string">"ops, I cant process you request"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Storage Service</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>s <span class="token operator">*</span>svc<span class="token punctuation">)</span> <span class="token function">getBooks</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	req<span class="token punctuation">,</span> err <span class="token operator">:=</span> http<span class="token punctuation">.</span><span class="token function">NewRequest</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>MethodGet<span class="token punctuation">,</span> s<span class="token punctuation">.</span>storageSvcPath<span class="token punctuation">,</span> <span class="token boolean">nil</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	req<span class="token punctuation">.</span>Header<span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span><span class="token string">"Content-Type"</span><span class="token punctuation">,</span> <span class="token string">"application/json"</span><span class="token punctuation">)</span>
+
+	res<span class="token punctuation">,</span> err <span class="token operator">:=</span> s<span class="token punctuation">.</span>httpClient<span class="token punctuation">.</span><span class="token function">Do</span><span class="token punctuation">(</span>req<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> res<span class="token punctuation">.</span>StatusCode <span class="token operator">==</span> http<span class="token punctuation">.</span>StatusInternalServerError <span class="token punctuation">{</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> badResponseErr
+	<span class="token punctuation">}</span>
+	body<span class="token punctuation">,</span> <span class="token boolean">_</span> <span class="token operator">:=</span> ioutil<span class="token punctuation">.</span><span class="token function">ReadAll</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>Body<span class="token punctuation">)</span>
+
+	<span class="token keyword">go</span> s<span class="token punctuation">.</span>cache<span class="token punctuation">.</span><span class="token function">Put</span><span class="token punctuation">(</span>context<span class="token punctuation">.</span><span class="token function">Background</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cacheKey<span class="token punctuation">,</span> <span class="token function">string</span><span class="token punctuation">(</span>body<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">var</span> books <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span>body<span class="token punctuation">,</span> <span class="token operator">&amp;</span>books<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> books<span class="token punctuation">,</span> <span class="token boolean">nil</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Stop the database container <code>docker stop circutbreaker-database-1</code> and check by querying the <code>booksvc</code> with <code>curl -s http://localhost:8081/</code>. The request will probably hang for a while but it soon returns a cached response and it shouldn't return any errors in all next requests.</p>
+<h2 id="conclusion" tabindex="-1">Conclusion <a class="header-anchor" href="#conclusion">#</a></h2>
+<p>The patterns I've described help you design and implement resilient microservice and limit the impact of service failures and latencies. That code must be used with proper alerting so you can understand fastly what goes wrong and fix it.</p>
+<h3 id="credits" tabindex="-1">Credits <a class="header-anchor" href="#credits">#</a></h3>
+<ul>
+<li><small><a href="https://github.com/cenkalti/backoff">backoff - The exponential backoff algorithm in Go</a></small></li>
+<li><small><a href="https://github.com/sony/gobreaker">gobreaker - Circuit Breaker implemented in Go</a></small></li>
+<li><small>This article is a Golang version of <a href="https://sylhare.github.io/2022/12/16/Cache-retry-or-break.html"><code>Cache , retry or break</code></a> with some changes.</small></li>
+</ul>
+<p>Happy coding!</p>
+
+<ul class="links-nextprev"><li>Previous: <a href="/blog/dockertest/">Write integration tests with dockertest in Golang</a></li><li>Next: <a href="/blog/grpc-in-golang/">Organize gRPC and protobuf code in Golang</a></li>
+</ul>
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /blog/resilient-microservice/ -->
+	</body>
+</html>

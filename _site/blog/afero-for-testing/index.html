@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Test file uploads with afero in Golang</title>
+		<meta name="author" content="Roman Kiselenko">
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="rkiselenko.dev">
+		<meta name="title" property="og:title" content="Test file uploads with afero in Golang">
+		<meta name="description" property="og:description" content="This is an example how to test http upload without access to real filesystem with afero.">
+		<meta property="og:url" content="https://rkiselenko.dev/blog/afero-for-testing/">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="twitter:card" content="summary">
+		<meta name="keywords" content="posts,golang,tests"/>
+		<meta name="twitter:site" content="@shindu666">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+		<link rel="manifest" href="/manifest.json" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
+		<style>/**
+ * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/chriskempson/tomorrow-theme
+ * @author Rose Pritchard
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #ccc;
+	background: none;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #999;
+}
+
+.token.punctuation {
+	color: #ccc;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #e2777a;
+}
+
+.token.function-name {
+	color: #6196cc;
+}
+
+.token.boolean,
+.token.number,
+.token.function {
+	color: #f08d49;
+}
+
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+	color: #f8c555;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #cc99cd;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+	color: #7ec699;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+	color: #67cdcc;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.inserted {
+	color: green;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+
+:root {
+	--font-family: 'Work Sans', sans-serif;
+	--font-family-monospace: "IBM Plex Mono", monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #333;
+
+	--background-color: #ffffff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #45a2ea;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #735063;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #C0C0C0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #bbbbbb;
+		--text-color-link-active: #818181;
+		--text-color-link-visited: #19a4e9;
+
+		--background-color: #15202b;
+	}
+
+	.github, .linkedin, .stackoverflow, .rss {
+		fill: white;
+	}
+
+	code {
+		background-color: var(--color-gray-50);
+		color: var(--background-color);
+		word-break: break-all;
+	}
+}
+
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+	min-width: 20em;
+}
+
+blockquote {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	padding-left: 15px;
+	border-left: 5px solid var(--text-color-link);
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+h1,h2,h3,h4 {
+	margin-bottom: 0;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p,li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+	font-weight: medium;
+	text-decoration: none;
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+
+p > a:after {
+     content: " " url(/img/anchor.svg);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre[class*="language-"] {
+	padding: 0.5em;
+	line-height: 1.2; /* 22px /16 */
+}
+pre,
+code {
+	font-family: var(--font-family-monospace);
+    /* border-radius: 5px; */
+	white-space: nowrap;
+	padding: 2px 2px 2px 2px;
+    font-size: 0.8em;
+}
+code[class*="language-"] {
+	padding: 0px;
+}
+
+pre,
+code[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	line-height: 1; /* 22px /16 */
+    font-size: 0.9em;
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.225; /* 22px /16 */
+	font-family: var(--font-family-monospace);
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+
+code {
+	background-color: var(--color-gray-50);
+	word-break: break-all;
+    border-radius: 3px;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 0.7em;
+	white-space: nowrap;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+
+.nav-item a[href]:hover {
+    text-decoration: underline;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* text-transform: capitalize; */
+	font-style: italic;
+}
+
+a[href]:visited.post-tag {
+	color: var(--text-color-link-visited);
+}
+
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+}
+.post-metadata time {
+	margin-right: 1em;
+	font-size: 0.85em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: .1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+.ava img {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+  max-width: 20%;
+}
+.ava {
+  width: 100%
+}
+
+/* .penguin {
+  margin-top: 16px;
+} */
+
+.penguin img {
+  width: 5%;
+  max-width: 10%;
+}
+
+img {
+  max-width: 100%;
+}
+img[width] {
+  width: auto; /* Defer to max-width */
+}
+img[width][height] {
+  height: auto; /* Preserve aspect ratio */
+}
+
+.codetitle {
+	clear: right;
+	float: right;
+	padding: .25em 0 .25em .5em;
+	border-radius: .25em .25em 0 0;
+	font-family: var(--font-family-monospace);
+	font-size: 0.85em; /* 12px /16 */
+}
+.codetitle-left {
+	float: left;
+	clear: left;
+	padding-left: 0;
+	padding-right: .5em;
+}
+.codetitle + pre {
+	clear: both;
+}
+.codetitle {
+	float: right;
+	margin: 0 2em 0 0;
+	padding: .25em 0;
+	background-color: transparent;
+	border-width: 0;
+	box-shadow: none;
+	font-size: 0.85em; /* 12px /16 */
+	font-weight: 200;
+}
+
+.codetitle-left {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+	bottom: -2px;
+}
+.codetitle-left + .codetitle-left {
+	clear: none;
+	margin-left: 2em;
+}
+/* Message Box */
+.message-box {
+	--color-message-box: #ffc;
+
+	display: block;
+	background-color: var(--color-message-box);
+	color: var(--color-gray-90);
+	padding: 1em 0.625em; /* 16px 10px /16 */
+}
+.message-box ol {
+	margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.message-box {
+		--color-message-box: #082840;
+	}
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+		<header>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+					<ul class="nav">
+						<li class="nav-item"><a href="/">Home</a></li>
+						<li class="nav-item"><a href="/blog/">Archive</a></li>
+						<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
+					<li class="nav-item">
+						<a href="https://github.com/roman-kiselenko/" target="_blank" title="@roman-kiselenko on GitHub">
+							<svg class="github" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://www.linkedin.com/in/roman-kiselenko/" target="_blank" title="roman-kiselenko on Linkedin">
+							<svg class="linkedin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
+							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/feed/feed.xml" target="_blank" title="roman-kiselenko rss">
+						 <svg class="rss" fill="#000000" height="20" width="20" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+								viewBox="-143 145 512 512" xml:space="preserve">
+							<path d="M113,145c-141.4,0-256,114.6-256,256s114.6,256,256,256s256-114.6,256-256S254.4,145,113,145z M43.1,518.7
+								c-6.2,6.2-14.7,9.9-24.1,9.9c-9.4,0-17.8-3.8-24-9.9c-6.2-6.2-10-14.6-10-23.9c0-9.4,3.8-17.8,10-24s14.6-10,24-10
+								c9.4,0,17.9,3.8,24,10c6.2,6.2,10,14.6,10,24C53,504.2,49.2,512.6,43.1,518.7z M104.8,529c-0.1-32.1-12.5-62.3-35.1-84.9
+								c-22.6-22.6-52.8-35.2-84.7-35.2V360c46.6,0,88.7,19,119.3,49.6c30.6,30.6,49.5,72.8,49.6,119.4H104.8z M192,529
+								c-0.1-114.2-92.8-207.1-206.9-207.1V273c70.6,0,134.5,28.7,180.8,75.1c46.3,46.4,75,110.3,75.1,180.9H192z"/>
+							</svg>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Test file uploads with afero in Golang</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2022-01-13">13 January 2022</time></li>
+	<li><a href="/tags/golang/" class="post-tag">golang</a>, </li>
+	<li><a href="/tags/tests/" class="post-tag">tests</a></li>
+</ul>
+
+<p>Suppose we have a simple file upload http handler that looks like this:</p>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"fmt"</span>
+	<span class="token string">"io"</span>
+	<span class="token string">"log"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"os"</span>
+
+	<span class="token string">"github.com/gorilla/mux"</span>
+	<span class="token string">"github.com/rs/cors"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">const</span> MB <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token number">20</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	r <span class="token operator">:=</span> <span class="token operator">&amp;</span>Router<span class="token punctuation">{</span><span class="token operator">&amp;</span>mux<span class="token punctuation">.</span>Router<span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">}</span>
+
+	r<span class="token punctuation">.</span><span class="token function">MustResponse</span><span class="token punctuation">(</span><span class="token string">"POST"</span><span class="token punctuation">,</span> <span class="token string">"/"</span><span class="token punctuation">,</span> <span class="token function">processFile</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+	r<span class="token punctuation">.</span><span class="token function">Run</span><span class="token punctuation">(</span><span class="token string">":8080"</span><span class="token punctuation">,</span> <span class="token string">"*"</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">processFile</span><span class="token punctuation">(</span><span class="token punctuation">)</span> http<span class="token punctuation">.</span>HandlerFunc <span class="token punctuation">{</span>
+	<span class="token keyword">return</span> http<span class="token punctuation">.</span><span class="token function">HandlerFunc</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span>res http<span class="token punctuation">.</span>ResponseWriter<span class="token punctuation">,</span> req <span class="token operator">*</span>http<span class="token punctuation">.</span>Request<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">if</span> err <span class="token operator">:=</span> req<span class="token punctuation">.</span><span class="token function">ParseMultipartForm</span><span class="token punctuation">(</span><span class="token number">50</span> <span class="token operator">*</span> MB<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token boolean">nil</span> <span class="token operator">!=</span> err <span class="token punctuation">{</span>
+			log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"while parse %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+			res<span class="token punctuation">.</span><span class="token function">WriteHeader</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">)</span>
+			<span class="token keyword">return</span>
+		<span class="token punctuation">}</span>
+
+		<span class="token keyword">defer</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			err <span class="token operator">:=</span> req<span class="token punctuation">.</span>MultipartForm<span class="token punctuation">.</span><span class="token function">RemoveAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+			<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+				log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Cant delete multipart error %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+			<span class="token punctuation">}</span>
+		<span class="token punctuation">}</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+		<span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> fheaders <span class="token operator">:=</span> <span class="token keyword">range</span> req<span class="token punctuation">.</span>MultipartForm<span class="token punctuation">.</span>File <span class="token punctuation">{</span>
+			<span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> hdr <span class="token operator">:=</span> <span class="token keyword">range</span> fheaders <span class="token punctuation">{</span>
+				log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Income file name: %s"</span><span class="token punctuation">,</span> hdr<span class="token punctuation">.</span>Filename<span class="token punctuation">)</span>
+
+				infile<span class="token punctuation">,</span> err <span class="token operator">:=</span> hdr<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+				<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+					log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Handle open error: %v"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+					res<span class="token punctuation">.</span><span class="token function">WriteHeader</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">)</span>
+					<span class="token keyword">continue</span>
+				<span class="token punctuation">}</span>
+				<span class="token keyword">defer</span> infile<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+				f<span class="token punctuation">,</span> err <span class="token operator">:=</span> os<span class="token punctuation">.</span><span class="token function">OpenFile</span><span class="token punctuation">(</span><span class="token string">"./downloaded"</span><span class="token punctuation">,</span> os<span class="token punctuation">.</span>O_WRONLY<span class="token operator">|</span>os<span class="token punctuation">.</span>O_CREATE<span class="token punctuation">,</span> <span class="token number">0666</span><span class="token punctuation">)</span>
+				<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+					log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Create Read Input error %v"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+					res<span class="token punctuation">.</span><span class="token function">WriteHeader</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>StatusInternalServerError<span class="token punctuation">)</span>
+					<span class="token keyword">continue</span>
+				<span class="token punctuation">}</span>
+				<span class="token keyword">defer</span> f<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+				io<span class="token punctuation">.</span><span class="token function">Copy</span><span class="token punctuation">(</span>f<span class="token punctuation">,</span> infile<span class="token punctuation">)</span>
+			<span class="token punctuation">}</span>
+		<span class="token punctuation">}</span>
+		res<span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span><span class="token string">"Content-Type"</span><span class="token punctuation">,</span> <span class="token string">"text/html"</span><span class="token punctuation">)</span>
+		fmt<span class="token punctuation">.</span><span class="token function">Fprint</span><span class="token punctuation">(</span>res<span class="token punctuation">,</span> <span class="token string">"&lt;h2>Success&lt;/h2>"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">type</span> Router <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	<span class="token operator">*</span>mux<span class="token punctuation">.</span>Router
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token punctuation">(</span>r <span class="token operator">*</span>Router<span class="token punctuation">)</span> <span class="token function">MustResponse</span><span class="token punctuation">(</span>meth<span class="token punctuation">,</span> path <span class="token builtin">string</span><span class="token punctuation">,</span> h http<span class="token punctuation">.</span>HandlerFunc<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	r<span class="token punctuation">.</span><span class="token function">HandleFunc</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> h<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Methods</span><span class="token punctuation">(</span>meth<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token punctuation">(</span>r <span class="token operator">*</span>Router<span class="token punctuation">)</span> <span class="token function">Run</span><span class="token punctuation">(</span>address<span class="token punctuation">,</span> origins <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	c <span class="token operator">:=</span> cors<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>cors<span class="token punctuation">.</span>Options<span class="token punctuation">{</span>
+		AllowedOrigins<span class="token punctuation">:</span>   <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">{</span>origins<span class="token punctuation">}</span><span class="token punctuation">,</span>
+		AllowedMethods<span class="token punctuation">:</span>   <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">{</span><span class="token string">"POST"</span><span class="token punctuation">,</span> <span class="token string">"GET"</span><span class="token punctuation">,</span> <span class="token string">"OPTIONS"</span><span class="token punctuation">,</span> <span class="token string">"PUT"</span><span class="token punctuation">,</span> <span class="token string">"DELETE"</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+		AllowedHeaders<span class="token punctuation">:</span>   <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">{</span><span class="token string">"Accept"</span><span class="token punctuation">,</span> <span class="token string">"Content-Type"</span><span class="token punctuation">,</span> <span class="token string">"If-None-Match"</span><span class="token punctuation">,</span> <span class="token string">"Content-Length"</span><span class="token punctuation">,</span> <span class="token string">"Accept-Encoding"</span><span class="token punctuation">,</span> <span class="token string">"Authorization"</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+		AllowCredentials<span class="token punctuation">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+	handler <span class="token operator">:=</span> c<span class="token punctuation">.</span><span class="token function">Handler</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+	http<span class="token punctuation">.</span><span class="token function">ListenAndServe</span><span class="token punctuation">(</span>address<span class="token punctuation">,</span> handler<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">vars</span><span class="token punctuation">(</span>req <span class="token operator">*</span>http<span class="token punctuation">.</span>Request<span class="token punctuation">)</span> <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token builtin">string</span> <span class="token punctuation">{</span>
+	<span class="token keyword">return</span> mux<span class="token punctuation">.</span><span class="token function">Vars</span><span class="token punctuation">(</span>req<span class="token punctuation">)</span>
+<span class="token punctuation">}</span></code></pre>
+<p>The code above is a common way to upload files to the server. The code below is for testing:</p>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"bytes"</span>
+	<span class="token string">"io"</span>
+	<span class="token string">"mime/multipart"</span>
+	<span class="token string">"net/http"</span>
+	<span class="token string">"net/http/httptest"</span>
+	<span class="token string">"os"</span>
+	<span class="token string">"testing"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">TestMain</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	filePath <span class="token operator">:=</span> <span class="token string">"file.jpg"</span>
+	fieldName <span class="token operator">:=</span> <span class="token string">"file"</span>
+	body <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span>bytes<span class="token punctuation">.</span>Buffer<span class="token punctuation">)</span>
+	mw <span class="token operator">:=</span> multipart<span class="token punctuation">.</span><span class="token function">NewWriter</span><span class="token punctuation">(</span>body<span class="token punctuation">)</span>
+	file<span class="token punctuation">,</span> err <span class="token operator">:=</span> os<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span>filePath<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		t<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	w<span class="token punctuation">,</span> err <span class="token operator">:=</span> mw<span class="token punctuation">.</span><span class="token function">CreateFormFile</span><span class="token punctuation">(</span>fieldName<span class="token punctuation">,</span> filePath<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		t<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> <span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">:=</span> io<span class="token punctuation">.</span><span class="token function">Copy</span><span class="token punctuation">(</span>w<span class="token punctuation">,</span> file<span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		t<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	mw<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	req <span class="token operator">:=</span> httptest<span class="token punctuation">.</span><span class="token function">NewRequest</span><span class="token punctuation">(</span>http<span class="token punctuation">.</span>MethodPost<span class="token punctuation">,</span> <span class="token string">"/"</span><span class="token punctuation">,</span> body<span class="token punctuation">)</span>
+	req<span class="token punctuation">.</span>Header<span class="token punctuation">.</span><span class="token function">Add</span><span class="token punctuation">(</span><span class="token string">"Content-Type"</span><span class="token punctuation">,</span> mw<span class="token punctuation">.</span><span class="token function">FormDataContentType</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	res <span class="token operator">:=</span> httptest<span class="token punctuation">.</span><span class="token function">NewRecorder</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	handler <span class="token operator">:=</span> <span class="token function">processFile</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	handler<span class="token punctuation">.</span><span class="token function">ServeHTTP</span><span class="token punctuation">(</span>res<span class="token punctuation">,</span> req<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> res<span class="token punctuation">.</span>Code <span class="token operator">!=</span> <span class="token number">200</span> <span class="token punctuation">{</span>
+		t<span class="token punctuation">.</span><span class="token function">Errorf</span><span class="token punctuation">(</span><span class="token string">"Expected %d, received %d"</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">,</span> res<span class="token punctuation">.</span>Code<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>The problem here is that our test is actually working with the real filesystem.
+We need a bunch of things in order to have the desired result.</p>
+<ul>
+<li>it needs an actual file to upload</li>
+<li>we should check uploaded file saved without errors</li>
+<li>we should have a cleanup procedure in order to delete saved file</li>
+</ul>
+<p>There is a way to test our handler without access to the real filesystem.
+The <a href="https://github.com/spf13/afero">afero</a> can help here.</p>
+<blockquote>
+<p>The MemMapFs backend is perfect for testing.</p>
+</blockquote>
+<ul>
+<li>Much faster than performing I/O operations on disk</li>
+<li>Avoid security issues and permissions</li>
+<li>Far more control. <code>rm -rf /</code> with confidence</li>
+<li>Test setup is far more easier to do</li>
+<li>No test cleanup needed</li>
+</ul>
+<p>The output of our test:</p>
+<pre class="language-shell" tabindex="0"><code class="language-shell">Running tool: /usr/bin/go <span class="token builtin class-name">test</span> <span class="token parameter variable">-timeout</span> 30s <span class="token parameter variable">-run</span> ^TestMain$ httptestfs <span class="token parameter variable">-v</span>
+
+<span class="token operator">==</span><span class="token operator">=</span> RUN   TestMain
+<span class="token number">2022</span>/01/13 <span class="token number">15</span>:24:21 Income file: file.jpg
+--- PASS: TestMain <span class="token punctuation">(</span><span class="token number">0</span>.00s<span class="token punctuation">)</span>
+PASS
+ok  	httptestfs	<span class="token number">0</span>.002s</code></pre>
+<p>After tests, the saved file is in the directory exactly how our handler processes it.</p>
+<p>Now let's use <code>afero</code>!</p>
+<pre class="language-git" tabindex="0"><code class="language-git">diff --git main.go main.go
+index 999fe42..2157943 100644
+<span class="token deleted">--- main.go</span>
+<span class="token inserted">+++ main.go</span>
+@@ -9,6 +9,7 @@ import (
+
+        <span class="token string">"github.com/gorilla/mux"</span>
+        <span class="token string">"github.com/rs/cors"</span>
+<span class="token inserted">+       "github.com/spf13/afero"</span>
+ )
+
+ const MB = 1 &lt;&lt; 20
+@@ -16,12 +17,14 @@ const MB = 1 &lt;&lt; 20
+ func main() {
+        r := &amp;Router{&amp;mux.Router{}}
+
+<span class="token deleted">-       r.MustResponse("POST", "/", processFile())</span>
+<span class="token inserted">+       var AppFs = afero.NewOsFs()</span>
+<span class="token inserted">+</span>
+<span class="token inserted">+       r.MustResponse("POST", "/", processFile(AppFs))</span>
+
+        r.Run(<span class="token string">":8080"</span>, <span class="token string">"*"</span>)
+ }
+
+<span class="token deleted">-func processFile() http.HandlerFunc {</span>
+<span class="token inserted">+func processFile(fs afero.Fs) http.HandlerFunc {</span>
+        return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+                if err := req.ParseMultipartForm(50 * MB); nil != err {
+                        log.Printf(<span class="token string">"while parse %s"</span>, err)
+@@ -38,7 +41,7 @@ func processFile() http.HandlerFunc {
+
+                for _, fheaders := range req.MultipartForm.File {
+                        for _, hdr := range fheaders {
+<span class="token deleted">-                               log.Printf("Income file len: %d", hdr.Size)</span>
+<span class="token inserted">+                               log.Printf("Income file: %s", hdr.Filename)</span>
+
+                                infile, err := hdr.Open()
+                                if err != nil {
+@@ -48,7 +51,7 @@ func processFile() http.HandlerFunc {
+                                }
+                                defer infile.Close()
+
+<span class="token deleted">-                               f, err := os.OpenFile("./downloaded", os.O_WRONLY|os.O_CREATE, 0666)</span>
+<span class="token inserted">+                               f, err := fs.OpenFile("./downloaded", os.O_WRONLY|os.O_CREATE, 0666)</span>
+                                if err != nil {
+                                        log.Printf(<span class="token string">"Create Read Input error %v"</span>, err)
+                                        res.WriteHeader(http.StatusInternalServerError)
+diff --git main_test.go main_test.go
+index d3875bf..66739c7 100644
+<span class="token deleted">--- main_test.go</span>
+<span class="token inserted">+++ main_test.go</span>
+@@ -8,14 +8,19 @@ import (
+        <span class="token string">"net/http/httptest"</span>
+        <span class="token string">"os"</span>
+        <span class="token string">"testing"</span>
+<span class="token inserted">+</span>
+<span class="token inserted">+       "github.com/spf13/afero"</span>
+ )
+
+ func TestMain(t *testing.T) {
+        filePath := <span class="token string">"file.jpg"</span>
+        fieldName := <span class="token string">"file"</span>
+<span class="token inserted">+       var AppFs = afero.NewMemMapFs()</span>
+<span class="token inserted">+</span>
+        body := new(bytes.Buffer)
+        mw := multipart.NewWriter(body)
+<span class="token deleted">-       file, err := os.Open(filePath)</span>
+<span class="token inserted">+       afero.WriteFile(AppFs, filePath, []byte("hello world"), 0644)</span>
+<span class="token inserted">+       file, err := AppFs.Create(filePath)</span>
+        if err != nil {
+                t.Fatal(err)
+        }
+@@ -32,10 +37,15 @@ func TestMain(t *testing.T) {
+        req := httptest.NewRequest(http.MethodPost, <span class="token string">"/"</span>, body)
+        req.Header.Add(<span class="token string">"Content-Type"</span>, mw.FormDataContentType())
+        res := httptest.NewRecorder()
+<span class="token deleted">-       handler := processFile()</span>
+<span class="token inserted">+       handler := processFile(AppFs)</span>
+
+        handler.ServeHTTP(res, req)
+        if res.Code != 200 {
+                t.Errorf(<span class="token string">"Expected %d, received %d"</span>, 200, res.Code)
+        }
+<span class="token inserted">+       fileName := "downloaded"</span>
+<span class="token inserted">+       _, err = AppFs.Stat(fileName)</span>
+<span class="token inserted">+       if os.IsNotExist(err) {</span>
+<span class="token inserted">+               t.Errorf("file \"%s\" does not exist.\n", fileName)</span>
+<span class="token inserted">+       }</span></code></pre>
+<p>With a little change, we create a mock filesystem for testing purposes. Let's run new tests.</p>
+<pre class="language-shell" tabindex="0"><code class="language-shell">Running tool: /usr/bin/go <span class="token builtin class-name">test</span> <span class="token parameter variable">-timeout</span> 30s <span class="token parameter variable">-run</span> ^TestMain$ httptestfs <span class="token parameter variable">-v</span>
+
+<span class="token operator">==</span><span class="token operator">=</span> RUN   TestMain
+<span class="token number">2022</span>/01/13 <span class="token number">15</span>:24:21 Income file: file.jpg
+--- PASS: TestMain <span class="token punctuation">(</span><span class="token number">0</span>.00s<span class="token punctuation">)</span>
+PASS
+ok  	httptestfs	<span class="token number">0</span>.002s</code></pre>
+<p>It's pass! Let's break our handler to check if tests actually works.</p>
+<pre class="language-git" tabindex="0"><code class="language-git">
+<span class="token deleted">- f, err := os.OpenFile("./downloaded", os.O_WRONLY|os.O_CREATE, 0666)</span>
+<span class="token inserted">+ f, err := fs.OpenFile("./download", os.O_WRONLY|os.O_CREATE, 0666)</span>
+                                if err != nil {</code></pre>
+<p>Tests fails due to not exist file. Just as we want.</p>
+<pre class="language-shell" tabindex="0"><code class="language-shell">Running tool: /usr/bin/go <span class="token builtin class-name">test</span> <span class="token parameter variable">-timeout</span> 30s <span class="token parameter variable">-run</span> ^TestMain$ httptestfs <span class="token parameter variable">-v</span>
+
+<span class="token operator">==</span><span class="token operator">=</span> RUN   TestMain
+<span class="token number">2022</span>/01/13 <span class="token number">15</span>:31:55 Income file: file.jpg
+    /home/user/dev/httpfs/main_test.go:49: <span class="token function">file</span> <span class="token string">"downloaded"</span> does not exist.
+--- FAIL: TestMain <span class="token punctuation">(</span><span class="token number">0</span>.00s<span class="token punctuation">)</span>
+FAIL
+FAIL	httptestfs	<span class="token number">0</span>.002s</code></pre>
+<p>Happy coding!</p>
+
+<ul class="links-nextprev"><li>Previous: <a href="/blog/go-embed-usecase/">One file web application in Golang</a></li><li>Next: <a href="/blog/tauri-solidjs-macos/">Try Tauri</a></li>
+</ul>
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /blog/afero-for-testing/ -->
+	</body>
+</html>

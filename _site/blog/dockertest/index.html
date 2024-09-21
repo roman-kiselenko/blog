@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Write integration tests with dockertest in Golang</title>
+		<meta name="author" content="Roman Kiselenko">
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="rkiselenko.dev">
+		<meta name="title" property="og:title" content="Write integration tests with dockertest in Golang">
+		<meta name="description" property="og:description" content="In this tutorial, we explore how to use dockertest for integration tests.">
+		<meta property="og:url" content="https://rkiselenko.dev/blog/dockertest/">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="twitter:card" content="summary">
+		<meta name="keywords" content="posts,docker,golang,tests"/>
+		<meta name="twitter:site" content="@shindu666">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+		<link rel="manifest" href="/manifest.json" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
+		<style>/**
+ * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/chriskempson/tomorrow-theme
+ * @author Rose Pritchard
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #ccc;
+	background: none;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #999;
+}
+
+.token.punctuation {
+	color: #ccc;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #e2777a;
+}
+
+.token.function-name {
+	color: #6196cc;
+}
+
+.token.boolean,
+.token.number,
+.token.function {
+	color: #f08d49;
+}
+
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+	color: #f8c555;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #cc99cd;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+	color: #7ec699;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+	color: #67cdcc;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.inserted {
+	color: green;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+
+:root {
+	--font-family: 'Work Sans', sans-serif;
+	--font-family-monospace: "IBM Plex Mono", monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #333;
+
+	--background-color: #ffffff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #45a2ea;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #735063;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #C0C0C0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #bbbbbb;
+		--text-color-link-active: #818181;
+		--text-color-link-visited: #19a4e9;
+
+		--background-color: #15202b;
+	}
+
+	.github, .linkedin, .stackoverflow, .rss {
+		fill: white;
+	}
+
+	code {
+		background-color: var(--color-gray-50);
+		color: var(--background-color);
+		word-break: break-all;
+	}
+}
+
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+	min-width: 20em;
+}
+
+blockquote {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	padding-left: 15px;
+	border-left: 5px solid var(--text-color-link);
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+h1,h2,h3,h4 {
+	margin-bottom: 0;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p,li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+	font-weight: medium;
+	text-decoration: none;
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+
+p > a:after {
+     content: " " url(/img/anchor.svg);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre[class*="language-"] {
+	padding: 0.5em;
+	line-height: 1.2; /* 22px /16 */
+}
+pre,
+code {
+	font-family: var(--font-family-monospace);
+    /* border-radius: 5px; */
+	white-space: nowrap;
+	padding: 2px 2px 2px 2px;
+    font-size: 0.8em;
+}
+code[class*="language-"] {
+	padding: 0px;
+}
+
+pre,
+code[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	line-height: 1; /* 22px /16 */
+    font-size: 0.9em;
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.225; /* 22px /16 */
+	font-family: var(--font-family-monospace);
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+
+code {
+	background-color: var(--color-gray-50);
+	word-break: break-all;
+    border-radius: 3px;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 0.7em;
+	white-space: nowrap;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+
+.nav-item a[href]:hover {
+    text-decoration: underline;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* text-transform: capitalize; */
+	font-style: italic;
+}
+
+a[href]:visited.post-tag {
+	color: var(--text-color-link-visited);
+}
+
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+}
+.post-metadata time {
+	margin-right: 1em;
+	font-size: 0.85em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: .1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+.ava img {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+  max-width: 20%;
+}
+.ava {
+  width: 100%
+}
+
+/* .penguin {
+  margin-top: 16px;
+} */
+
+.penguin img {
+  width: 5%;
+  max-width: 10%;
+}
+
+img {
+  max-width: 100%;
+}
+img[width] {
+  width: auto; /* Defer to max-width */
+}
+img[width][height] {
+  height: auto; /* Preserve aspect ratio */
+}
+
+.codetitle {
+	clear: right;
+	float: right;
+	padding: .25em 0 .25em .5em;
+	border-radius: .25em .25em 0 0;
+	font-family: var(--font-family-monospace);
+	font-size: 0.85em; /* 12px /16 */
+}
+.codetitle-left {
+	float: left;
+	clear: left;
+	padding-left: 0;
+	padding-right: .5em;
+}
+.codetitle + pre {
+	clear: both;
+}
+.codetitle {
+	float: right;
+	margin: 0 2em 0 0;
+	padding: .25em 0;
+	background-color: transparent;
+	border-width: 0;
+	box-shadow: none;
+	font-size: 0.85em; /* 12px /16 */
+	font-weight: 200;
+}
+
+.codetitle-left {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+	bottom: -2px;
+}
+.codetitle-left + .codetitle-left {
+	clear: none;
+	margin-left: 2em;
+}
+/* Message Box */
+.message-box {
+	--color-message-box: #ffc;
+
+	display: block;
+	background-color: var(--color-message-box);
+	color: var(--color-gray-90);
+	padding: 1em 0.625em; /* 16px 10px /16 */
+}
+.message-box ol {
+	margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.message-box {
+		--color-message-box: #082840;
+	}
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+		<header>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+					<ul class="nav">
+						<li class="nav-item"><a href="/">Home</a></li>
+						<li class="nav-item"><a href="/blog/">Archive</a></li>
+						<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
+					<li class="nav-item">
+						<a href="https://github.com/roman-kiselenko/" target="_blank" title="@roman-kiselenko on GitHub">
+							<svg class="github" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://www.linkedin.com/in/roman-kiselenko/" target="_blank" title="roman-kiselenko on Linkedin">
+							<svg class="linkedin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
+							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/feed/feed.xml" target="_blank" title="roman-kiselenko rss">
+						 <svg class="rss" fill="#000000" height="20" width="20" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+								viewBox="-143 145 512 512" xml:space="preserve">
+							<path d="M113,145c-141.4,0-256,114.6-256,256s114.6,256,256,256s256-114.6,256-256S254.4,145,113,145z M43.1,518.7
+								c-6.2,6.2-14.7,9.9-24.1,9.9c-9.4,0-17.8-3.8-24-9.9c-6.2-6.2-10-14.6-10-23.9c0-9.4,3.8-17.8,10-24s14.6-10,24-10
+								c9.4,0,17.9,3.8,24,10c6.2,6.2,10,14.6,10,24C53,504.2,49.2,512.6,43.1,518.7z M104.8,529c-0.1-32.1-12.5-62.3-35.1-84.9
+								c-22.6-22.6-52.8-35.2-84.7-35.2V360c46.6,0,88.7,19,119.3,49.6c30.6,30.6,49.5,72.8,49.6,119.4H104.8z M192,529
+								c-0.1-114.2-92.8-207.1-206.9-207.1V273c70.6,0,134.5,28.7,180.8,75.1c46.3,46.4,75,110.3,75.1,180.9H192z"/>
+							</svg>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Write integration tests with dockertest in Golang</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2023-04-10">10 April 2023</time></li>
+	<li><a href="/tags/docker/" class="post-tag">docker</a>, </li>
+	<li><a href="/tags/golang/" class="post-tag">golang</a>, </li>
+	<li><a href="/tags/tests/" class="post-tag">tests</a></li>
+</ul>
+
+<div class="message-box">
+ “Tests are stories we tell the next generation of programmers on a project.”
+<p>― Roy Osherove</p>
+</div>
+<p>Integration tests are the most effective way to test your application.
+The developers themselves usually write those tests.
+This tutorial aims to show you how easy and efficient it is to write integration tests with <a href="https://github.com/ory/dockertest">dockertest</a>.</p>
+<h2 id="appication" tabindex="-1">Appication <a class="header-anchor" href="#appication">#</a></h2>
+<p>First, let's describe the tools we'll use:</p>
+<ul>
+<li><a href="https://gin-gonic.com/">gin</a> - HTTP web framework.</li>
+<li><a href="https://redis.io/">redis</a> - Key/Value storage</li>
+<li><a href="https://docs.docker.com/compose/">docker-compose</a> - A tool for defining and running multi-container Docker applications.</li>
+<li><a href="https://onsi.github.io/ginkgo/#getting-started">ginkgo</a> - Testing Framework for Go</li>
+<li><a href="https://github.com/ory/dockertest">dockertest</a> - Dockertest helps you boot up ephermal docker images for your Go tests with minimal work.</li>
+</ul>
+<p>Next, let's describe the application; as an example, we'll use a simple application with REST API.
+Our API exposes three endpoints:</p>
+<ul>
+<li><code>GET /health</code> - check if application ready to accept requests.</li>
+<li><code>GET /item</code> - get item from the storage.</li>
+<li><code>POST /item</code> - put item to storage.</li>
+</ul>
+<p>The item we will put to the <code>Redis</code> contains an expire timeout set to 10 seconds.</p>
+<p>The application logic is simple: an external client puts an item into the service, and another client gets the thing.</p>
+<h2 id="structure" tabindex="-1">Structure <a class="header-anchor" href="#structure">#</a></h2>
+<p>Usually, we’re using  Docker Compose as our development environment. The config contains all our docker image tags and parameters.
+The command to build and run the application: <code>docker-compose up --build</code>.
+Here is the <code>docker-compose.yml</code> file for our application:</p>
+<pre class="language-yml" tabindex="0"><code class="language-yml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">redis</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> <span class="token string">'bitnami/redis:latest'</span>
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> ALLOW_EMPTY_PASSWORD=yes
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+  <span class="token key atrule">app</span><span class="token punctuation">:</span>
+    <span class="token key atrule">build</span><span class="token punctuation">:</span> .
+    <span class="token key atrule">ports</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"8080:8080"</span>
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token key atrule">REDIS_ADDR</span><span class="token punctuation">:</span> redis<span class="token punctuation">:</span><span class="token number">6379</span>
+      <span class="token key atrule">HTTP_PORT</span><span class="token punctuation">:</span> <span class="token string">":8080"</span>
+    <span class="token key atrule">depends_on</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> redis
+    <span class="token key atrule">networks</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"test_network"</span>
+<span class="token key atrule">networks</span><span class="token punctuation">:</span>
+   <span class="token key atrule">test_network</span><span class="token punctuation">:</span>
+        <span class="token key atrule">driver</span><span class="token punctuation">:</span> bridge</code></pre>
+<p>The structure:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token operator">></span> tree
+├── Dockerfile
+├── bin
+│   └── server
+├── cmd
+│   ├── config.go <span class="token comment"># config struct for parsing ENV variables</span>
+│   ├── main.go
+│   └── server.go <span class="token comment"># holds handlers for out REST API</span>
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+├── integration_tests
+│   ├── <span class="token function">service</span>
+│   │   └── service.go <span class="token comment"># dockertest logic to spinup containers</span>
+│   └── suite_test.go  <span class="token comment"># ginkgo specs to tests our application</span>
+└── pkg
+    └── recache
+        └── recache.go <span class="token comment"># redis client</span>
+
+<span class="token number">7</span> directories, <span class="token number">12</span> files</code></pre>
+<h2 id="tests" tabindex="-1">Tests <a class="header-anchor" href="#tests">#</a></h2>
+<p>Our tests cases would cover next steps:</p>
+<ul>
+<li>Put item to redis by calling <code>POST /item</code> with json payload like this for example <code>{&quot;counter&quot;: 15}</code>.</li>
+<li>Get item from redis by calling <code>GET /item</code> and expect json response like  <code>{&quot;counter&quot;: 15}</code>.</li>
+<li>Wait 15 seconds and call <code>GET /item</code> again and expect an error.</li>
+</ul>
+<p>Our tests are placed in the <code>integration_tests</code> folder.</p>
+<p>There is <code>integration_tests/service</code> package holds the logic to spin up docker containers for our application in the same way as we're using it in our <code>docker-compose.yml</code>.</p>
+<p>Here is the code from <code>integration_tests/service</code> package:</p>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token comment">// This struct holds services</span>
+<span class="token comment">// 1. The application container built from Dockerfile</span>
+<span class="token comment">// 2. The redis container build from bitnami/redis image</span>
+<span class="token keyword">type</span> Service <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	Container <span class="token operator">*</span>dockertest<span class="token punctuation">.</span>Resource
+	Redis     <span class="token operator">*</span>dockertest<span class="token punctuation">.</span>Resource
+	Network   <span class="token operator">*</span>dockertest<span class="token punctuation">.</span>Network
+	Pool      <span class="token operator">*</span>dockertest<span class="token punctuation">.</span>Pool
+<span class="token punctuation">}</span></code></pre>
+<p>The <code>New</code> function we're using in our <code>suite_test.go</code>, follow comments in the code:</p>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">func</span> <span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token operator">*</span>Service<span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// Initialize docker pool</span>
+    <span class="token comment">// This command create a pool to interact with docker runtime</span>
+    <span class="token comment">// I'm using colima but Docker Desktop also should work.</span>
+	pool<span class="token punctuation">,</span> err <span class="token operator">:=</span> dockertest<span class="token punctuation">.</span><span class="token function">NewPool</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Could not construct pool: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+    <span class="token comment">// Ping the docker daemon</span>
+    <span class="token comment">// check if everything is good and</span>
+    <span class="token comment">// there is the connection with docker</span>
+	<span class="token keyword">if</span> err <span class="token operator">=</span> pool<span class="token punctuation">.</span>Client<span class="token punctuation">.</span><span class="token function">Ping</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">`could not connect to docker: %s`</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+    <span class="token comment">// Create a network for our containers</span>
+	network<span class="token punctuation">,</span> err <span class="token operator">:=</span> pool<span class="token punctuation">.</span><span class="token function">CreateNetwork</span><span class="token punctuation">(</span><span class="token string">"test_network"</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">`could not connect to docker: %s`</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// Build and run the redis server</span>
+	redisContainer<span class="token punctuation">,</span> err <span class="token operator">:=</span> pool<span class="token punctuation">.</span><span class="token function">Run</span><span class="token punctuation">(</span><span class="token string">"bitnami/redis"</span><span class="token punctuation">,</span> <span class="token string">"latest"</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">{</span><span class="token string">"ALLOW_EMPTY_PASSWORD=yes"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">`could not start redis: %s`</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+    <span class="token comment">// Connect redis container to our network </span>
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> redisContainer<span class="token punctuation">.</span><span class="token function">ConnectToNetwork</span><span class="token punctuation">(</span>network<span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">`could not connect to network: %s`</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// retry check redis connection</span>
+	<span class="token keyword">if</span> err <span class="token operator">=</span> pool<span class="token punctuation">.</span><span class="token function">Retry</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+		<span class="token keyword">var</span> db <span class="token operator">*</span>redis<span class="token punctuation">.</span>Client
+        <span class="token comment">// Here we are connecting to the redis server and ping that server</span>
+		<span class="token comment">// It's matter to note the address, since we're out of the docker network</span>
+		<span class="token comment">// We can use `localhost`, but in the our application container we can't use `localhost`</span>
+		db <span class="token operator">=</span> redis<span class="token punctuation">.</span><span class="token function">NewClient</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>redis<span class="token punctuation">.</span>Options<span class="token punctuation">{</span>
+			Addr<span class="token punctuation">:</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"localhost:%s"</span><span class="token punctuation">,</span> redisContainer<span class="token punctuation">.</span><span class="token function">GetPort</span><span class="token punctuation">(</span><span class="token string">"6379/tcp"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span>
+		err <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Ping</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Err</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+			log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"health check error: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+			<span class="token keyword">return</span> err
+		<span class="token punctuation">}</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Could not connect pass redis check: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// Build and run the given Dockerfile</span>
+	resource<span class="token punctuation">,</span> err <span class="token operator">:=</span> pool<span class="token punctuation">.</span><span class="token function">BuildAndRunWithOptions</span><span class="token punctuation">(</span>
+		<span class="token string">"../Dockerfile"</span><span class="token punctuation">,</span>
+		<span class="token operator">&amp;</span>dockertest<span class="token punctuation">.</span>RunOptions<span class="token punctuation">{</span>
+			Hostname<span class="token punctuation">:</span>  <span class="token string">"server"</span><span class="token punctuation">,</span>
+			NetworkID<span class="token punctuation">:</span> network<span class="token punctuation">.</span>Network<span class="token punctuation">.</span>ID<span class="token punctuation">,</span>
+			Name<span class="token punctuation">:</span>      <span class="token string">"test-application"</span><span class="token punctuation">,</span>
+			PortBindings<span class="token punctuation">:</span> <span class="token keyword">map</span><span class="token punctuation">[</span>docker<span class="token punctuation">.</span>Port<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span>docker<span class="token punctuation">.</span>PortBinding<span class="token punctuation">{</span>
+				<span class="token string">"8080/tcp"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>docker<span class="token punctuation">.</span>PortBinding<span class="token punctuation">{</span> <span class="token punctuation">{</span> HostPort<span class="token punctuation">:</span> <span class="token string">"8080"</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+			<span class="token punctuation">}</span><span class="token punctuation">,</span>
+			Env<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">{</span>
+                <span class="token comment">// Here is we get the actuall IP of redis container in our docker network</span>
+				<span class="token comment">// The address is different from localhost</span>
+				<span class="token string">"REDIS_ADDR="</span> <span class="token operator">+</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"%s:6379"</span><span class="token punctuation">,</span> redisContainer<span class="token punctuation">.</span><span class="token function">GetIPInNetwork</span><span class="token punctuation">(</span>network<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+				<span class="token string">"HTTP_PORT=:8080"</span><span class="token punctuation">,</span>
+			<span class="token punctuation">}</span><span class="token punctuation">,</span>
+		<span class="token punctuation">}</span><span class="token punctuation">,</span>
+	<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Could not start resource: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+
+	<span class="token comment">// Retry /health endpoint</span>
+	<span class="token comment">// and check if our application container is ready to accept requests</span>
+	<span class="token keyword">if</span> err <span class="token operator">=</span> pool<span class="token punctuation">.</span><span class="token function">Retry</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+		err <span class="token operator">:=</span> <span class="token function">checkHealth</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+			log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"health check error: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+			<span class="token keyword">return</span> err
+		<span class="token punctuation">}</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Could not pass health: %s"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token boolean">nil</span><span class="token punctuation">,</span> err
+	<span class="token punctuation">}</span>
+	<span class="token keyword">return</span> <span class="token operator">&amp;</span>Service<span class="token punctuation">{</span>resource<span class="token punctuation">,</span> redisContainer<span class="token punctuation">,</span> network<span class="token punctuation">,</span> pool<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token boolean">nil</span>
+<span class="token punctuation">}</span></code></pre>
+<p>The code above does all the routine to build and run our application by using <code>Dockerfile</code>.
+There is a useful function for HTTP calls and <code>Close()</code> function which cleanup our resources by removing the network and purging containers.</p>
+<p>Here is the code from <code>integration_tests/suite_tests.go</code>:</p>
+<pre class="language-go" tabindex="0"><code class="language-go"><span class="token keyword">var</span> <span class="token boolean">_</span> <span class="token operator">=</span> <span class="token function">Describe</span><span class="token punctuation">(</span><span class="token string">"IntegrationTests"</span><span class="token punctuation">,</span> Ordered<span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">var</span> <span class="token punctuation">(</span>
+		srv     <span class="token operator">*</span>service<span class="token punctuation">.</span>Service
+		err     <span class="token builtin">error</span>
+		counter <span class="token builtin">float64</span>
+	<span class="token punctuation">)</span>
+    <span class="token comment">// Initialize our docker containers</span>
+    <span class="token comment">// Pass all health checks</span>
+    <span class="token comment">// Expect no errors</span>
+	<span class="token function">BeforeAll</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		srv<span class="token punctuation">,</span> err <span class="token operator">=</span> service<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		counter <span class="token operator">=</span> <span class="token function">float64</span><span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span>
+		<span class="token function">Expect</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token function">Expect</span><span class="token punctuation">(</span>srv<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NotTo</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+    <span class="token comment">// Cleanup our resoursec after all steps</span>
+	<span class="token function">AfterAll</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		err <span class="token operator">=</span> srv<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token function">Expect</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+	<span class="token function">Describe</span><span class="token punctuation">(</span><span class="token string">"put item to redis"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token function">Context</span><span class="token punctuation">(</span><span class="token string">"send POST request"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token function">It</span><span class="token punctuation">(</span><span class="token string">"should be a 200 OK response"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+				body <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span>fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">`{ "counter": %v }`</span><span class="token punctuation">,</span> counter<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token comment">// Use `localhost:8080` since we're outside of docker network</span>
+				response<span class="token punctuation">,</span> err <span class="token operator">:=</span> service<span class="token punctuation">.</span><span class="token function">PostRequst</span><span class="token punctuation">(</span><span class="token string">"http://localhost:8080/item"</span><span class="token punctuation">,</span> body<span class="token punctuation">)</span>
+				<span class="token function">Expect</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+				<span class="token function">Expect</span><span class="token punctuation">(</span>response<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">Equal</span><span class="token punctuation">(</span><span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"success"</span><span class="token punctuation">:</span> <span class="token boolean">true</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+			<span class="token punctuation">}</span><span class="token punctuation">)</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+	<span class="token function">Describe</span><span class="token punctuation">(</span><span class="token string">"get item from redis"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token function">Context</span><span class="token punctuation">(</span><span class="token string">"send GET request"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token function">It</span><span class="token punctuation">(</span><span class="token string">"should be a 200 OK response"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+				response<span class="token punctuation">,</span> err <span class="token operator">:=</span> service<span class="token punctuation">.</span><span class="token function">GetRequst</span><span class="token punctuation">(</span><span class="token string">"http://localhost:8080/item"</span><span class="token punctuation">)</span>
+				<span class="token function">Expect</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+				<span class="token function">Expect</span><span class="token punctuation">(</span>response<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">To</span><span class="token punctuation">(</span><span class="token function">Equal</span><span class="token punctuation">(</span><span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">{</span><span class="token string">"counter"</span><span class="token punctuation">:</span> counter<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+			<span class="token punctuation">}</span><span class="token punctuation">)</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+	<span class="token function">Describe</span><span class="token punctuation">(</span><span class="token string">"get item from redis"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token function">Context</span><span class="token punctuation">(</span><span class="token string">"wait 15 seconds and send GET request"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token function">It</span><span class="token punctuation">(</span><span class="token string">"should be a 500 Internal Error response"</span><span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+				time<span class="token punctuation">.</span><span class="token function">Sleep</span><span class="token punctuation">(</span><span class="token number">15</span> <span class="token operator">*</span> time<span class="token punctuation">.</span>Second<span class="token punctuation">)</span>
+				<span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">:=</span> service<span class="token punctuation">.</span><span class="token function">GetRequst</span><span class="token punctuation">(</span><span class="token string">"http://localhost:8080/item"</span><span class="token punctuation">)</span>
+				<span class="token function">Expect</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NotTo</span><span class="token punctuation">(</span><span class="token function">BeNil</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+			<span class="token punctuation">}</span><span class="token punctuation">)</span>
+		<span class="token punctuation">}</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span></code></pre>
+<p>If we run tests we'll see next output:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">go run github.com/onsi/ginkgo/v2/ginkgo <span class="token parameter variable">-vv</span> ./integration_tests/<span class="token punctuation">..</span>.
+Running Suite: IntegrationTests Suite - /Users/user/example/integration_tests
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span>
+Random Seed: <span class="token number">1681140106</span>
+
+Will run <span class="token number">3</span> of <span class="token number">3</span> specs
+------------------------------
+IntegrationTests
+/Users/user/example/example/integration_tests/suite_test.go:19
+  put item to redis
+  /Users/user/example/example/integration_tests/suite_test.go:37
+    send POST request
+    /Users/user/example/example/integration_tests/suite_test.go:38
+      should be a <span class="token number">200</span> OK response
+      /Users/user/example/example/integration_tests/suite_test.go:39
+  <span class="token operator">></span> Enter <span class="token punctuation">[</span>BeforeAll<span class="token punctuation">]</span> IntegrationTests - /Users/user/example/example/integration_tests/suite_test.go:25 @ 04/10/23 <span class="token number">17</span>:21:47.982
+  <span class="token operator">&lt;</span> Exit <span class="token punctuation">[</span>BeforeAll<span class="token punctuation">]</span> IntegrationTests - /Users/user/example/example/integration_tests/suite_test.go:25 @ 04/10/23 <span class="token number">17</span>:23:36.056 <span class="token punctuation">(</span>1m48.075s<span class="token punctuation">)</span>
+  <span class="token operator">></span> Enter <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">200</span> OK response - /Users/user/example/example/integration_tests/suite_test.go:39 @ 04/10/23 <span class="token number">17</span>:23:36.057
+  <span class="token operator">&lt;</span> Exit <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">200</span> OK response - /Users/user/example/example/integration_tests/suite_test.go:39 @ 04/10/23 <span class="token number">17</span>:23:36.068 <span class="token punctuation">(</span>11ms<span class="token punctuation">)</span>
+• <span class="token punctuation">[</span><span class="token number">108.087</span> seconds<span class="token punctuation">]</span>
+------------------------------
+IntegrationTests
+/Users/user/example/example/integration_tests/suite_test.go:19
+  get item from redis
+  /Users/user/example/example/integration_tests/suite_test.go:48
+    send GET request
+    /Users/user/example/example/integration_tests/suite_test.go:49
+      should be a <span class="token number">200</span> OK response
+      /Users/user/example/example/integration_tests/suite_test.go:50
+  <span class="token operator">></span> Enter <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">200</span> OK response - /Users/user/example/example/integration_tests/suite_test.go:50 @ 04/10/23 <span class="token number">17</span>:23:36.069
+  <span class="token operator">&lt;</span> Exit <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">200</span> OK response - /Users/user/example/example/integration_tests/suite_test.go:50 @ 04/10/23 <span class="token number">17</span>:23:36.07 <span class="token punctuation">(</span>2ms<span class="token punctuation">)</span>
+• <span class="token punctuation">[</span><span class="token number">0.002</span> seconds<span class="token punctuation">]</span>
+------------------------------
+IntegrationTests
+/Users/user/example/example/integration_tests/suite_test.go:19
+  get item from redis
+  /Users/user/example/example/integration_tests/suite_test.go:58
+    <span class="token function">wait</span> <span class="token number">15</span> seconds and send GET request
+    /Users/user/example/example/integration_tests/suite_test.go:59
+      should be a <span class="token number">500</span> Internal Error response
+      /Users/user/example/example/integration_tests/suite_test.go:60
+  <span class="token operator">></span> Enter <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">500</span> Internal Error response - /Users/user/example/example/integration_tests/suite_test.go:60 @ 04/10/23 <span class="token number">17</span>:23:36.071
+<span class="token number">2023</span>/04/10 <span class="token number">17</span>:23:51 Could not call API: <span class="token number">500</span> body: map<span class="token punctuation">[</span>error:redis: nil<span class="token punctuation">]</span>
+  <span class="token operator">&lt;</span> Exit <span class="token punctuation">[</span>It<span class="token punctuation">]</span> should be a <span class="token number">500</span> Internal Error response - /Users/user/example/example/integration_tests/suite_test.go:60 @ 04/10/23 <span class="token number">17</span>:23:51.075 <span class="token punctuation">(</span><span class="token number">15</span>.005s<span class="token punctuation">)</span>
+  <span class="token operator">></span> Enter <span class="token punctuation">[</span>AfterAll<span class="token punctuation">]</span> IntegrationTests - /Users/user/example/example/integration_tests/suite_test.go:32 @ 04/10/23 <span class="token number">17</span>:23:51.075
+  <span class="token operator">&lt;</span> Exit <span class="token punctuation">[</span>AfterAll<span class="token punctuation">]</span> IntegrationTests - /Users/user/example/example/integration_tests/suite_test.go:32 @ 04/10/23 <span class="token number">17</span>:23:51.736 <span class="token punctuation">(</span>660ms<span class="token punctuation">)</span>
+• <span class="token punctuation">[</span><span class="token number">15.665</span> seconds<span class="token punctuation">]</span>
+------------------------------
+
+Ran <span class="token number">3</span> of <span class="token number">3</span> Specs <span class="token keyword">in</span> <span class="token number">123.755</span> seconds
+SUCCESS<span class="token operator">!</span> -- <span class="token number">3</span> Passed <span class="token operator">|</span> <span class="token number">0</span> Failed <span class="token operator">|</span> <span class="token number">0</span> Pending <span class="token operator">|</span> <span class="token number">0</span> Skipped
+PASS
+
+Ginkgo ran <span class="token number">1</span> suite <span class="token keyword">in</span> 2m4.977159458s
+Test Suite Passed</code></pre>
+<p>Our tests are well formatted, the output is very descriptive.
+The <code>ginkgo</code> is able to generate <code>junit</code> report btw.</p>
+<p>I hope this article gives you a good idea of how to write integration tests for your <code>Golang</code> application.</p>
+<p>Happy coding!</p>
+
+<ul class="links-nextprev"><li>Previous: <a href="/blog/tauri-solidjs-macos/">Try Tauri</a></li><li>Next: <a href="/blog/resilient-microservice/">Design resilient microservices in Golang</a></li>
+</ul>
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /blog/dockertest/ -->
+	</body>
+</html>
