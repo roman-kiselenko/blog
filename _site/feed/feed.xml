@@ -236,7 +236,7 @@ WARN&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span c
 &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; Open an editor to review or modify the current configuration
   Choose another template &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;docker, podman, archlinux, fedora, &lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
   Exit&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Choose the &amp;quot;Open an editor to review or modify the current configuration&amp;quot; option to review and modify the VM configuration. (Ensure the &lt;code&gt;$EDITOR&lt;/code&gt; variable is declared to utilize this option).&lt;/p&gt;
+&lt;p&gt;Choose the &lt;em&gt;&amp;quot;Open an editor to review or modify the current configuration&amp;quot;&lt;/em&gt; option to review and modify the VM configuration. (Ensure the &lt;code&gt;$EDITOR&lt;/code&gt; variable is declared to utilize this option).&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;arch&lt;/code&gt; option:&lt;/p&gt;
 &lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;arch&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; x86_64&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;If you choose wrong arch option the following error will be raised:&lt;/p&gt;

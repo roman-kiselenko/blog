@@ -37,7 +37,7 @@ WARN[0000] This form is deprecated. Use `limactl create --name=crio template://d
   Choose another template (docker, podman, archlinux, fedora, ...)
   Exit
 ```
-Choose the "Open an editor to review or modify the current configuration" option to review and modify the VM configuration. (Ensure the `$EDITOR` variable is declared to utilize this option).
+Choose the *"Open an editor to review or modify the current configuration"* option to review and modify the VM configuration. (Ensure the `$EDITOR` variable is declared to utilize this option).
 
 The `arch` option:
 
