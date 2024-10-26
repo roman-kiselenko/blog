@@ -47,7 +47,27 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/docker/</loc>
+		<loc>https://rkiselenko.dev/tags/vm/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/lima/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/arm/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/macbook/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/apple-silicon/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
@@ -73,6 +93,11 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/tags/k8s/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/docker/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
@@ -113,31 +138,6 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/tags/macos/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/vm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/lima/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/arm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/macbook/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/apple-silicon/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
