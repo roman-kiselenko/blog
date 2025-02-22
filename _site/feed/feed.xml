@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:base="en">
 	<title>rkiselenko.dev</title>
-	<subtitle>Insights from the Daily Life of a Software Developer</subtitle>
+	<subtitle>Insights from the Daily Life of a Engineer</subtitle>
 	<link href="https://rkiselenko.dev/feed/feed.xml" rel="self"/>
 	<link href="https://rkiselenko.dev/"/>
 	<updated>2024-05-08T00:00:00Z</updated>
