@@ -112,17 +112,17 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/utm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/design/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
 	<url>
 		<loc>https://rkiselenko.dev/tags/grpc/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/utm/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	

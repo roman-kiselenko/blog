@@ -20,31 +20,31 @@
 &lt;p&gt;&quot;UTM is an app for running other operating systems on your iPhone or iPad. It is not for running iOS on other systems. This allows you, among other things, to run Windows or Linux on your iOS device at a usable speed.&quot; – UTM Website
 &lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/_LgTXEGM9x-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/_LgTXEGM9x-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/_LgTXEGM9x-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/_LgTXEGM9x-900.jpeg&quot; width=&quot;900&quot; height=&quot;660&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
-&lt;p&gt;In this article I&#39;ll utilizing &lt;a href=&quot;https://getutm.app/&quot;&gt;UTM VMs&lt;/a&gt; to establish Linux development environments on Apple silicon.&lt;/p&gt;
-&lt;p&gt;This article uses the same technic I&#39;ve described &lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-lima&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;In this article, I&#39;ll show you how to use &lt;a href=&quot;https://getutm.app/&quot;&gt;UTM VMs&lt;/a&gt; virtual machines to create Linux development environments on Apple Silicon.&lt;/p&gt;
+&lt;p&gt;This approach builds on the technique I described in &lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-lima&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&quot;dependencies&quot; tabindex=&quot;-1&quot;&gt;Dependencies &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-utm/development-on-mac-with-lima/&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;It&#39;s better to install &lt;code&gt;UTM&lt;/code&gt; with &lt;code&gt;brew&lt;/code&gt;, &lt;code&gt;brew install --cask utm&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Install &lt;code&gt;brew install cdrtools&lt;/code&gt; to create &lt;code&gt;init.iso&lt;/code&gt; our seed script for VM.&lt;/p&gt;
+&lt;p&gt;First, install UTM using Homebrew: &lt;code&gt;brew install --cask utm&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Then, install &lt;code&gt;brew install cdrtools&lt;/code&gt;, which provides &lt;code&gt;mkisofs&lt;/code&gt;. We&#39;ll use that tool to create an &lt;code&gt;init.iso&lt;/code&gt; - our seed script for initializing the VM.&lt;/p&gt;
 &lt;p&gt;We need a bunch of tools and images.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Takes Fedora Cloud images here &lt;a href=&quot;https://mirror.bahnhof.net/pub/fedora/linux/releases/&quot;&gt;mirror.bahnhof.net&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Fedora Cloud images &lt;a href=&quot;https://mirror.bahnhof.net/pub/fedora/linux/releases/&quot;&gt;mirror.bahnhof.net&lt;/a&gt;.&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;For &lt;code&gt;aarch64&lt;/code&gt;
+&lt;li&gt;&lt;code&gt;aarch64&lt;/code&gt;
 &lt;a href=&quot;https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2&quot;&gt;Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;For &lt;code&gt;x86_64&lt;/code&gt; use &lt;a href=&quot;https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2&quot;&gt;Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;x86_64&lt;/code&gt; &lt;a href=&quot;https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2&quot;&gt;Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Takes Ubuntu Cloud images here &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current&quot;&gt;cdimage.ubuntu.com&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Ubuntu Cloud images &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current&quot;&gt;cdimage.ubuntu.com&lt;/a&gt;.&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;For &lt;code&gt;aarch64&lt;/code&gt; &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-arm64.img.xz&quot;&gt;plucky-preinstalled-server-arm64.img.xz&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;For &lt;code&gt;x86_64&lt;/code&gt; &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-amd64.img.xz&quot;&gt;plucky-preinstalled-server-amd64.img.xz&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;aarch64&lt;/code&gt; &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-arm64.img.xz&quot;&gt;plucky-preinstalled-server-arm64.img.xz&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;x86_64&lt;/code&gt; &lt;a href=&quot;https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-amd64.img.xz&quot;&gt;plucky-preinstalled-server-amd64.img.xz&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&quot;cloud-init&quot; tabindex=&quot;-1&quot;&gt;Cloud-Init &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-utm/development-on-mac-with-lima/&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;I&#39;m going to use &lt;a href=&quot;https://cloudinit.readthedocs.io/en/latest/index.html&quot;&gt;cloud-init&lt;/a&gt; scripts to initialize VM with packages (&lt;code&gt;git&lt;/code&gt;, &lt;code&gt;jq&lt;/code&gt;, &lt;code&gt;go&lt;/code&gt;, &lt;code&gt;docker&lt;/code&gt; etc) and settings I need for development, also for provision ssh key:&lt;/p&gt;
+&lt;p&gt;We’ll use &lt;a href=&quot;https://cloudinit.readthedocs.io/en/latest/index.html&quot;&gt;cloud-init&lt;/a&gt; scripts to bootstrap the VM with the tools and settings needed for development - things like &lt;code&gt;git&lt;/code&gt;, &lt;code&gt;jq&lt;/code&gt;, &lt;code&gt;go&lt;/code&gt;, &lt;code&gt;docker&lt;/code&gt;, and more. We&#39;ll also use it to provision an SSH key for easy access.&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;user-data &lt;/b&gt;&lt;/div&gt;
 &lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;#cloud-config&lt;/span&gt;
 
@@ -100,7 +100,7 @@
   &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;dnf&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; install&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; docker&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;ce&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; docker&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;ce&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;cli&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; containerd.io&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
   &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;systemctl&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; enable&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;now&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; docker&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
   &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /opt/go.sh&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Generate &lt;code&gt;init.iso&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;Generate &lt;code&gt;init.iso&lt;/code&gt; (&lt;code&gt;mkisofs&lt;/code&gt; is a part of &lt;code&gt;cdrtools&lt;/code&gt;):&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;touch&lt;/span&gt; meta-data &lt;span class=&quot;token comment&quot;&gt;# going to be empty&lt;/span&gt;
 &lt;span class=&quot;token function&quot;&gt;mkisofs&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-output&lt;/span&gt; init.iso &lt;span class=&quot;token parameter variable&quot;&gt;-volid&lt;/span&gt; cidata &lt;span class=&quot;token parameter variable&quot;&gt;-joliet&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-rock&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;user-data,meta-data&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;create-vm&quot; tabindex=&quot;-1&quot;&gt;Create VM &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-utm/development-on-mac-with-lima/&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
@@ -110,6 +110,7 @@
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/eRe6E24zN4-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/eRe6E24zN4-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/eRe6E24zN4-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/eRe6E24zN4-900.jpeg&quot; width=&quot;900&quot; height=&quot;648&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;p&gt;No changes in Hardware:&lt;/p&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/x-GhIz-RzX-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/x-GhIz-RzX-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/x-GhIz-RzX-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/x-GhIz-RzX-900.jpeg&quot; width=&quot;900&quot; height=&quot;649&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;Use &lt;code&gt;8GB&lt;/code&gt; disk, we dont need it and will remove it later.&lt;/p&gt;
 &lt;p&gt;In Summary name the VM and check &lt;code&gt;Open VM Settings&lt;/code&gt;:&lt;/p&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/XyFnZeSbG_-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/XyFnZeSbG_-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/XyFnZeSbG_-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/XyFnZeSbG_-900.jpeg&quot; width=&quot;900&quot; height=&quot;651&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;p&gt;Uncheck &lt;code&gt;UEFI Boot&lt;/code&gt;:&lt;/p&gt;
@@ -125,13 +126,19 @@ import the &lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/4JspUqD-is-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/4JspUqD-is-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/4JspUqD-is-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/4JspUqD-is-900.jpeg&quot; width=&quot;900&quot; height=&quot;653&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;p&gt;Run VM, if everything goes right you&#39;ll see boot terminal, like on the image below:&lt;/p&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/NRbwvJX1q_-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/NRbwvJX1q_-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/NRbwvJX1q_-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/NRbwvJX1q_-900.jpeg&quot; width=&quot;900&quot; height=&quot;721&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
-&lt;p&gt;Wait until you see login screen:&lt;/p&gt;
-&lt;p&gt;Wait a little it more, so cloud-init script done his job.&lt;/p&gt;
+&lt;p&gt;Wait until the login screen appears. The default username is fedora and the password is password, as defined in our cloud-init script.&lt;/p&gt;
+&lt;p&gt;Give it a moment after logging in &lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-utm/development-on-mac-with-lima/#cloud-init&quot;&gt;cloud-init script.&lt;/a&gt; will need some time to finish setting everything up.&lt;/p&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/B_-08aAIMK-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/B_-08aAIMK-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/B_-08aAIMK-900.webp 900w&quot;&gt;&lt;img alt=&quot;&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://rkiselenko.dev/img/B_-08aAIMK-900.jpeg&quot; width=&quot;900&quot; height=&quot;661&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
-&lt;p&gt;Power off VM and remove &lt;code&gt;init.iso&lt;/code&gt; drive, it does his job only on the first boot.&lt;/p&gt;
-&lt;p&gt;You can check logs of cloud-init scripts by this command &lt;code&gt;sudo cat /var/log/cloud-init-output.log&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;After the VM has finished initializing, power it off and remove the init.iso drive—it only needs to run during the first boot.&lt;/p&gt;
+&lt;p&gt;You can check the output of the cloud-init scripts with &lt;code&gt;sudo cat /var/log/cloud-init-output.log&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Tip:&lt;/p&gt;
-&lt;p&gt;In order to create &lt;code&gt;aarch64&lt;/code&gt; VM, use &lt;code&gt;arm64&lt;/code&gt; cloud images (on Ubuntu the process is almost the same, expect you dont need to disable &lt;code&gt;UEFI Boot&lt;/code&gt; and extract &lt;code&gt;*.img.xz&lt;/code&gt; 🤷)&lt;/p&gt;
+&lt;p&gt;To create a VM for Apple Silicon (aarch64), follow these steps:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Choose &lt;code&gt;Virtualize&lt;/code&gt;, since Apple Silicon is ARM-based.&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;arm64&lt;/code&gt; cloud images.&lt;/li&gt;
+&lt;li&gt;For Ubuntu, the process is almost the same - except you don’t need to disable UEFI boot.&lt;/li&gt;
+&lt;li&gt;Don’t forget to extract the &lt;code&gt;*.img.xz&lt;/code&gt; file before using it.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;Happy coding!&lt;/p&gt;
 </content>
 	</entry>

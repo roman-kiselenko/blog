@@ -17,31 +17,30 @@ tags:
 
 {% image "./UTM-Fedora.jpeg", "", [900] %}
 
-In this article I'll utilizing [UTM VMs](https://getutm.app/) to establish Linux development environments on Apple silicon.
+In this article, I'll show you how to use [UTM VMs](https://getutm.app/) virtual machines to create Linux development environments on Apple Silicon.
 
-This article uses the same technic I've described [here](/blog/development-on-mac-with-lima).
+This approach builds on the technique I described in [here](/blog/development-on-mac-with-lima).
 
 ### Dependencies
 
-It's better to install `UTM` with `brew`, `brew install --cask utm`.
+First, install UTM using Homebrew: `brew install --cask utm`.
 
-Install `brew install cdrtools` to create `init.iso` our seed script for VM.
+Then, install `brew install cdrtools`, which provides `mkisofs`. We'll use that tool to create an `init.iso` - our seed script for initializing the VM.
 
 We need a bunch of tools and images.
 
-- Takes Fedora Cloud images here [mirror.bahnhof.net](https://mirror.bahnhof.net/pub/fedora/linux/releases/).
-    1. For `aarch64`
+- Fedora Cloud images [mirror.bahnhof.net](https://mirror.bahnhof.net/pub/fedora/linux/releases/).
+    1. `aarch64`
  [Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2](https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2)
-    1. For `x86_64` use [Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2](https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2)
+    1. `x86_64` [Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2](https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2)
 
-- Takes Ubuntu Cloud images here [cdimage.ubuntu.com](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current).
-    1. For `aarch64` [plucky-preinstalled-server-arm64.img.xz](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-arm64.img.xz)
-    1. For `x86_64` [plucky-preinstalled-server-amd64.img.xz](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-amd64.img.xz)
+- Ubuntu Cloud images [cdimage.ubuntu.com](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current).
+    1. `aarch64` [plucky-preinstalled-server-arm64.img.xz](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-arm64.img.xz)
+    1. `x86_64` [plucky-preinstalled-server-amd64.img.xz](https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-amd64.img.xz)
 
 ### Cloud-Init
 
-I'm going to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/index.html) scripts to initialize VM with packages (`git`, `jq`, `go`, `docker` etc) and settings I need for development, also for provision ssh key:
-
+We’ll use [cloud-init](https://cloudinit.readthedocs.io/en/latest/index.html) scripts to bootstrap the VM with the tools and settings needed for development - things like `git`, `jq`, `go`, `docker`, and more. We'll also use it to provision an SSH key for easy access.
 
 {% codetitle "", "user-data" %}
 
@@ -102,7 +101,7 @@ runcmd:
   - /opt/go.sh
 ```
 
-Generate `init.iso`:
+Generate `init.iso` (`mkisofs` is a part of `cdrtools`):
 
 ```bash
 touch meta-data # going to be empty
@@ -122,6 +121,8 @@ Chose Other:
 No changes in Hardware:
 
 {% image "./3.jpeg", "", [900] %}
+
+Use `8GB` disk, we dont need it and will remove it later.
 
 In Summary name the VM and check `Open VM Settings`:
 
@@ -151,19 +152,23 @@ Run VM, if everything goes right you'll see boot terminal, like on the image bel
 
 {% image "./10.jpeg", "", [900] %}
 
-Wait until you see login screen:
+Wait until the login screen appears. The default username is fedora and the password is password, as defined in our cloud-init script.
 
-Wait a little it more, so cloud-init script done his job.
+Give it a moment after logging in [cloud-init script.](/blog/development-on-mac-with-utm/development-on-mac-with-lima/#cloud-init) will need some time to finish setting everything up.
 
 {% image "./11.jpeg", "", [900] %}
 
-Power off VM and remove `init.iso` drive, it does his job only on the first boot.
+After the VM has finished initializing, power it off and remove the init.iso drive—it only needs to run during the first boot.
 
-You can check logs of cloud-init scripts by this command `sudo cat /var/log/cloud-init-output.log`
+You can check the output of the cloud-init scripts with `sudo cat /var/log/cloud-init-output.log`
 
 Tip:
 
-In order to create `aarch64` VM, use `arm64` cloud images (on Ubuntu the process is almost the same, expect you dont need to disable `UEFI Boot` and extract `*.img.xz` :shrug:)
+To create a VM for Apple Silicon (aarch64), follow these steps:
 
+- Choose `Virtualize`, since Apple Silicon is ARM-based.
+- Use `arm64` cloud images.
+- For Ubuntu, the process is almost the same - except you don’t need to disable UEFI boot.
+- Don’t forget to extract the `*.img.xz` file before using it.
 
 Happy coding!
