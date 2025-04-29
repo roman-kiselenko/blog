@@ -72,21 +72,6 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/yaml/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/json/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/cue/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/vm/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
@@ -112,17 +97,12 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/design/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/grpc/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/utm/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/design/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
@@ -138,6 +118,26 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/tags/macos/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/grpc/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/yaml/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/json/</loc>
+		<lastmod>2023-08-12</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/cue/</loc>
 		<lastmod>2023-08-12</lastmod>
 	</url>
 	
@@ -173,11 +173,11 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/about/</loc>
-		<lastmod>2024-07-01</lastmod>
+		<lastmod>2025-02-22</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/blog/development-on-mac-with-utm/development-on-mac-with-lima/</loc>
+		<loc>https://rkiselenko.dev/blog/development-on-mac-with-utm/</loc>
 		<lastmod>2025-04-17</lastmod>
 	</url>
 </urlset>

@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Development On Apple Silicon with UTM</title>
+		<meta name="author" content="Roman Kiselenko">
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="rkiselenko.dev">
+		<meta name="title" property="og:title" content="Development On Apple Silicon with UTM">
+		<meta name="description" property="og:description" content="A concise tutorial detailing the setup of development VMs on Apple Silicon MacBooks.">
+		<meta property="og:url" content="https://rkiselenko.dev/blog/development-on-mac-with-utm/">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/UTM-Fedora.jpg">
+		<meta name="twitter:card" content="summary">
+		<meta name="keywords" content="posts,vm,utm,arm,macbook,apple silicon"/>
+		<meta name="twitter:site" content="@shindu666">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/UTM-Fedora.jpg">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet" />
+		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+		<link rel="manifest" href="/manifest.json" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
+		<style>/**
+ * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/chriskempson/tomorrow-theme
+ * @author Rose Pritchard
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #ccc;
+	background: none;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #2d2d2d;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #999;
+}
+
+.token.punctuation {
+	color: #ccc;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #e2777a;
+}
+
+.token.function-name {
+	color: #6196cc;
+}
+
+.token.boolean,
+.token.number,
+.token.function {
+	color: #f08d49;
+}
+
+.token.property,
+.token.class-name,
+.token.constant,
+.token.symbol {
+	color: #f8c555;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #cc99cd;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.variable {
+	color: #7ec699;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+	color: #67cdcc;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.inserted {
+	color: green;
+}
+/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+
+:root {
+	--font-family: 'Work Sans', sans-serif;
+	--font-family-monospace: "Iosevka Web", monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #333;
+
+	--background-color: #ffffff;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #45a2ea;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #735063;
+
+	--syntax-tab-size: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #C0C0C0;
+		--color-gray-90: #dad8d8;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #bbbbbb;
+		--text-color-link-active: #818181;
+		--text-color-link-visited: #19a4e9;
+
+		--background-color: #15202b;
+	}
+
+	.github, .linkedin, .stackoverflow, .rss {
+		fill: white;
+	}
+
+	code {
+		background-color: var(--color-gray-50);
+		color: var(--background-color);
+		word-break: break-all;
+	}
+}
+
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+	min-width: 20em;
+}
+
+blockquote {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	padding-left: 15px;
+	border-left: 5px solid var(--text-color-link);
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+h1,h2,h3,h4 {
+	margin-bottom: 0;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p,li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+	font-weight: medium;
+	text-decoration: none;
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+
+p > a:after {
+     content: " " url(/img/anchor.svg);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre[class*="language-"] {
+	padding: 0.5em;
+	line-height: 1.2; /* 22px /16 */
+}
+pre,
+code {
+	font-family: var(--font-family-monospace);
+    /* border-radius: 5px; */
+	white-space: nowrap;
+	padding: 2px 2px 2px 2px;
+    font-size: 0.8em;
+}
+code[class*="language-"] {
+	padding: 0px;
+}
+
+pre,
+code[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	line-height: 1; /* 22px /16 */
+    font-size: 0.9em;
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.225; /* 22px /16 */
+	font-family: var(--font-family-monospace);
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+
+code {
+	background-color: var(--color-gray-50);
+	word-break: break-all;
+    border-radius: 3px;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 0.7em;
+	white-space: nowrap;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+
+.nav-item a[href]:hover {
+    text-decoration: underline;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* text-transform: capitalize; */
+	font-style: italic;
+}
+
+a[href]:visited.post-tag {
+	color: var(--text-color-link-visited);
+}
+
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+}
+.post-metadata time {
+	margin-right: 1em;
+	font-size: 0.85em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: .1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+.ava img {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+  max-width: 20%;
+}
+.ava {
+  width: 100%
+}
+
+/* .penguin {
+  margin-top: 16px;
+} */
+
+.penguin img {
+  width: 5%;
+  max-width: 10%;
+}
+
+img {
+  max-width: 100%;
+}
+img[width] {
+  width: auto; /* Defer to max-width */
+}
+img[width][height] {
+  height: auto; /* Preserve aspect ratio */
+}
+
+.codetitle {
+	clear: right;
+	float: right;
+	padding: .25em 0 .25em .5em;
+	border-radius: .25em .25em 0 0;
+	font-family: var(--font-family-monospace);
+	font-size: 0.85em; /* 12px /16 */
+}
+.codetitle-left {
+	float: left;
+	clear: left;
+	padding-left: 0;
+	padding-right: .5em;
+}
+.codetitle + pre {
+	clear: both;
+}
+.codetitle {
+	float: right;
+	margin: 0 2em 0 0;
+	padding: .25em 0;
+	background-color: transparent;
+	border-width: 0;
+	box-shadow: none;
+	font-size: 0.85em; /* 12px /16 */
+	font-weight: 200;
+}
+
+.codetitle-left {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+	bottom: -2px;
+}
+.codetitle-left + .codetitle-left {
+	clear: none;
+	margin-left: 2em;
+}
+/* Message Box */
+.message-box {
+	--color-message-box: #ffc;
+
+	display: block;
+	background-color: var(--color-message-box);
+	color: var(--color-gray-90);
+	padding: 1em 0.625em; /* 16px 10px /16 */
+}
+.message-box ol {
+	margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.message-box {
+		--color-message-box: #082840;
+	}
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+		<header>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+					<ul class="nav">
+						<li class="nav-item"><a href="/">Home</a></li>
+						<li class="nav-item"><a href="/blog/">Archive</a></li>
+						<li class="nav-item"><a href="/about/">About Me</a></li>
+					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
+					<li class="nav-item">
+						<a href="https://github.com/roman-kiselenko/" target="_blank" title="@roman-kiselenko on GitHub">
+							<svg class="github" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://www.linkedin.com/in/roman-kiselenko/" target="_blank" title="roman-kiselenko on Linkedin">
+							<svg class="linkedin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
+							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/feed/feed.xml" target="_blank" title="roman-kiselenko rss">
+						 <svg class="rss" fill="#000000" height="20" width="20" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+								viewBox="-143 145 512 512" xml:space="preserve">
+							<path d="M113,145c-141.4,0-256,114.6-256,256s114.6,256,256,256s256-114.6,256-256S254.4,145,113,145z M43.1,518.7
+								c-6.2,6.2-14.7,9.9-24.1,9.9c-9.4,0-17.8-3.8-24-9.9c-6.2-6.2-10-14.6-10-23.9c0-9.4,3.8-17.8,10-24s14.6-10,24-10
+								c9.4,0,17.9,3.8,24,10c6.2,6.2,10,14.6,10,24C53,504.2,49.2,512.6,43.1,518.7z M104.8,529c-0.1-32.1-12.5-62.3-35.1-84.9
+								c-22.6-22.6-52.8-35.2-84.7-35.2V360c46.6,0,88.7,19,119.3,49.6c30.6,30.6,49.5,72.8,49.6,119.4H104.8z M192,529
+								c-0.1-114.2-92.8-207.1-206.9-207.1V273c70.6,0,134.5,28.7,180.8,75.1c46.3,46.4,75,110.3,75.1,180.9H192z"/>
+							</svg>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+<h1>Development On Apple Silicon with UTM</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2025-04-17">17 April 2025</time></li>
+	<li><a href="/tags/vm/" class="post-tag">vm</a>, </li>
+	<li><a href="/tags/utm/" class="post-tag">utm</a>, </li>
+	<li><a href="/tags/arm/" class="post-tag">arm</a>, </li>
+	<li><a href="/tags/macbook/" class="post-tag">macbook</a>, </li>
+	<li><a href="/tags/apple-silicon/" class="post-tag">apple silicon</a></li>
+</ul>
+
+<div class="message-box">
+<p>"UTM is an app for running other operating systems on your iPhone or iPad. It is not for running iOS on other systems. This allows you, among other things, to run Windows or Linux on your iOS device at a usable speed." – UTM Website
+</div>
+<p><picture><source type="image/gif" srcset="/img/_LgTXEGM9x-900.gif 900w"><source type="image/avif" srcset="/img/_LgTXEGM9x-900.avif 900w"><source type="image/webp" srcset="/img/_LgTXEGM9x-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/_LgTXEGM9x-900.jpeg" width="900" height="660"></picture></p>
+<p>In this article, I'll show you how to use <a href="https://getutm.app/">UTM VMs</a> virtual machines to create Linux development environments on Apple Silicon.</p>
+<p>This approach builds on the technique I described in <a href="/blog/development-on-mac-with-lima">here</a>.</p>
+<h3 id="dependencies" tabindex="-1">Dependencies <a class="header-anchor" href="#dependencies">#</a></h3>
+<p>First, install UTM using Homebrew: <code>brew install --cask utm</code>.</p>
+<p>Then, install <code>brew install cdrtools</code>, which provides <code>mkisofs</code>. We'll use that tool to create an <code>init.iso</code> - our seed script for initializing the VM.</p>
+<p>We need a bunch of tools and images.</p>
+<ul>
+<li>
+<p>Fedora Cloud images <a href="https://mirror.bahnhof.net/pub/fedora/linux/releases/">mirror.bahnhof.net</a>.</p>
+<ol>
+<li><code>aarch64</code>
+<a href="https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2">Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2</a></li>
+<li><code>x86_64</code> <a href="https://mirror.bahnhof.net/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2">Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2</a></li>
+</ol>
+</li>
+<li>
+<p>Ubuntu Cloud images <a href="https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current">cdimage.ubuntu.com</a>.</p>
+<ol>
+<li><code>aarch64</code> <a href="https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-arm64.img.xz">plucky-preinstalled-server-arm64.img.xz</a></li>
+<li><code>x86_64</code> <a href="https://cdimage.ubuntu.com/ubuntu-server/daily-preinstalled/current/plucky-preinstalled-server-amd64.img.xz">plucky-preinstalled-server-amd64.img.xz</a></li>
+</ol>
+</li>
+</ul>
+<h3 id="cloud-init" tabindex="-1">Cloud-Init <a class="header-anchor" href="#cloud-init">#</a></h3>
+<p>We’ll use <a href="https://cloudinit.readthedocs.io/en/latest/index.html">cloud-init</a> scripts to bootstrap the VM with the tools and settings needed for development - things like <code>git</code>, <code>jq</code>, <code>go</code>, <code>docker</code>, and more. We'll also use it to provision an SSH key for easy access.</p>
+<div class="codetitle codetitle-left"><b>user-data </b></div>
+<pre class="language-yaml" tabindex="0"><code class="language-yaml"><span class="token comment">#cloud-config</span>
+
+<span class="token key atrule">system_info</span><span class="token punctuation">:</span>
+   <span class="token key atrule">default_user</span><span class="token punctuation">:</span>
+     <span class="token key atrule">name</span><span class="token punctuation">:</span> fedora
+
+<span class="token key atrule">users</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">name</span><span class="token punctuation">:</span> fedora
+    <span class="token key atrule">sudo</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">'ALL=(ALL) NOPASSWD:ALL'</span><span class="token punctuation">]</span>
+    <span class="token key atrule">groups</span><span class="token punctuation">:</span> users<span class="token punctuation">,</span> admin<span class="token punctuation">,</span> docker
+    <span class="token key atrule">shell</span><span class="token punctuation">:</span> /bin/bash
+
+<span class="token key atrule">ssh_authorized_keys</span><span class="token punctuation">:</span>
+   <span class="token punctuation">-</span> ssh<span class="token punctuation">-</span>rsa AAAAB3Nza<span class="token punctuation">...</span>
+
+<span class="token key atrule">groups</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> docker
+
+<span class="token key atrule">packages</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> curl
+  <span class="token punctuation">-</span> wget
+  <span class="token punctuation">-</span> git
+  <span class="token punctuation">-</span> jq
+  <span class="token punctuation">-</span> gcc
+  <span class="token punctuation">-</span> clang
+
+<span class="token key atrule">chpasswd</span><span class="token punctuation">:</span>
+  <span class="token key atrule">list</span><span class="token punctuation">:</span> <span class="token punctuation">|</span><span class="token scalar string">
+    fedora:password</span>
+  <span class="token key atrule">expire</span><span class="token punctuation">:</span> <span class="token boolean important">False</span>
+
+<span class="token key atrule">resize_rootfs</span><span class="token punctuation">:</span> <span class="token boolean important">True</span>
+
+<span class="token key atrule">write_files</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">path</span><span class="token punctuation">:</span> /etc/sysctl.d/enabled_ipv4_forwarding.conf
+    <span class="token key atrule">content</span><span class="token punctuation">:</span> <span class="token punctuation">|</span><span class="token scalar string">
+      net.ipv4.conf.all.forwarding=1</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">path</span><span class="token punctuation">:</span> /opt/go.sh
+    <span class="token key atrule">owner</span><span class="token punctuation">:</span> fedora<span class="token punctuation">:</span>fedora
+    <span class="token key atrule">permissions</span><span class="token punctuation">:</span> <span class="token string">'0700'</span>
+    <span class="token key atrule">content</span><span class="token punctuation">:</span> <span class="token punctuation">|</span><span class="token scalar string">
+      #!/usr/bin/env bash
+      set -ex
+      wget https://go.dev/dl/go1.24.1.linux-amd64.tar.gz -O go.tar.gz
+      sudo tar -C /usr/local -xzvf go.tar.gz
+      rm -rf go
+      echo 'export GOROOT=/usr/local/go' >> /home/fedora/.bashrc
+      echo 'export GOPATH=$HOME/.go' >> /home/fedora/.bashrc
+      echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> /home/fedora/.bashrc</span>
+<span class="token key atrule">runcmd</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> <span class="token punctuation">[</span>dnf<span class="token punctuation">,</span> config<span class="token punctuation">-</span>manager<span class="token punctuation">,</span> addrepo<span class="token punctuation">,</span> <span class="token punctuation">-</span><span class="token punctuation">-</span>from<span class="token punctuation">-</span>repofile="https<span class="token punctuation">:</span>//download.docker.com/linux/fedora/docker<span class="token punctuation">-</span>ce.repo"<span class="token punctuation">]</span>
+  <span class="token punctuation">-</span> <span class="token punctuation">[</span>dnf<span class="token punctuation">,</span> install<span class="token punctuation">,</span> docker<span class="token punctuation">-</span>ce<span class="token punctuation">,</span> docker<span class="token punctuation">-</span>ce<span class="token punctuation">-</span>cli<span class="token punctuation">,</span> containerd.io<span class="token punctuation">]</span>
+  <span class="token punctuation">-</span> <span class="token punctuation">[</span>systemctl<span class="token punctuation">,</span> enable<span class="token punctuation">,</span> <span class="token punctuation">-</span><span class="token punctuation">-</span>now<span class="token punctuation">,</span> docker<span class="token punctuation">]</span>
+  <span class="token punctuation">-</span> /opt/go.sh</code></pre>
+<p>Generate <code>init.iso</code> (<code>mkisofs</code> is a part of <code>cdrtools</code>):</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token function">touch</span> meta-data <span class="token comment"># going to be empty</span>
+<span class="token function">mkisofs</span> <span class="token parameter variable">-output</span> init.iso <span class="token parameter variable">-volid</span> cidata <span class="token parameter variable">-joliet</span> <span class="token parameter variable">-rock</span> <span class="token punctuation">{</span>user-data,meta-data<span class="token punctuation">}</span></code></pre>
+<h3 id="create-vm" tabindex="-1">Create VM <a class="header-anchor" href="#create-vm">#</a></h3>
+<p>Create VM, chose Emulate:</p>
+<p><picture><source type="image/gif" srcset="/img/33dhKW_moC-900.gif 900w"><source type="image/avif" srcset="/img/33dhKW_moC-900.avif 900w"><source type="image/webp" srcset="/img/33dhKW_moC-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/33dhKW_moC-900.jpeg" width="900" height="652"></picture></p>
+<p>Chose Other:</p>
+<p><picture><source type="image/gif" srcset="/img/eRe6E24zN4-900.gif 900w"><source type="image/avif" srcset="/img/eRe6E24zN4-900.avif 900w"><source type="image/webp" srcset="/img/eRe6E24zN4-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/eRe6E24zN4-900.jpeg" width="900" height="648"></picture></p>
+<p>No changes in Hardware:</p>
+<p><picture><source type="image/gif" srcset="/img/x-GhIz-RzX-900.gif 900w"><source type="image/avif" srcset="/img/x-GhIz-RzX-900.avif 900w"><source type="image/webp" srcset="/img/x-GhIz-RzX-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/x-GhIz-RzX-900.jpeg" width="900" height="649"></picture></p>
+<p>Use <code>8GB</code> disk, we dont need it and will remove it later.</p>
+<p>In Summary name the VM and check <code>Open VM Settings</code>:</p>
+<p><picture><source type="image/gif" srcset="/img/XyFnZeSbG_-900.gif 900w"><source type="image/avif" srcset="/img/XyFnZeSbG_-900.avif 900w"><source type="image/webp" srcset="/img/XyFnZeSbG_-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/XyFnZeSbG_-900.jpeg" width="900" height="651"></picture></p>
+<p>Uncheck <code>UEFI Boot</code>:</p>
+<p><picture><source type="image/gif" srcset="/img/XC6rVytqkq-900.gif 900w"><source type="image/avif" srcset="/img/XC6rVytqkq-900.avif 900w"><source type="image/webp" srcset="/img/XC6rVytqkq-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/XC6rVytqkq-900.jpeg" width="900" height="648"></picture></p>
+<p>Remove <code>Display</code>, <code>Sound</code> with rigth mouse click, and add <code>Serial</code> -&gt; <code>Built-In</code>:</p>
+<p><picture><source type="image/gif" srcset="/img/YPTDgqEhFk-900.gif 900w"><source type="image/avif" srcset="/img/YPTDgqEhFk-900.avif 900w"><source type="image/webp" srcset="/img/YPTDgqEhFk-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/YPTDgqEhFk-900.jpeg" width="900" height="648"></picture></p>
+<p>Remove created <code>Drive</code>, and add new one <code>VirtiO</code>,
+<code>Import</code> the <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#dependencies">Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2</a></p>
+<p><picture><source type="image/gif" srcset="/img/mLLwXLEswf-490.gif 490w"><source type="image/avif" srcset="/img/mLLwXLEswf-490.avif 490w"><source type="image/webp" srcset="/img/mLLwXLEswf-490.webp 490w"><img alt="" loading="lazy" decoding="async" src="/img/mLLwXLEswf-490.jpeg" width="490" height="316"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/7r6y5QrvrR-900.gif 900w"><source type="image/avif" srcset="/img/7r6y5QrvrR-900.avif 900w"><source type="image/webp" srcset="/img/7r6y5QrvrR-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/7r6y5QrvrR-900.jpeg" width="900" height="653"></picture></p>
+<p>Create another one <code>Drive</code> -&gt; <code>VirtiO</code>,
+import the <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#dependencies-for-vm">init.iso</a></p>
+<p><picture><source type="image/gif" srcset="/img/4JspUqD-is-900.gif 900w"><source type="image/avif" srcset="/img/4JspUqD-is-900.avif 900w"><source type="image/webp" srcset="/img/4JspUqD-is-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/4JspUqD-is-900.jpeg" width="900" height="653"></picture></p>
+<p>Run VM, if everything goes right you'll see boot terminal, like on the image below:</p>
+<p><picture><source type="image/gif" srcset="/img/NRbwvJX1q_-900.gif 900w"><source type="image/avif" srcset="/img/NRbwvJX1q_-900.avif 900w"><source type="image/webp" srcset="/img/NRbwvJX1q_-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/NRbwvJX1q_-900.jpeg" width="900" height="721"></picture></p>
+<p>Wait until the login screen appears. The default username is fedora and the password is password, as defined in our cloud-init script.</p>
+<p>Give it a moment after logging in <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#cloud-init">cloud-init script.</a> will need some time to finish setting everything up.</p>
+<p><picture><source type="image/gif" srcset="/img/B_-08aAIMK-900.gif 900w"><source type="image/avif" srcset="/img/B_-08aAIMK-900.avif 900w"><source type="image/webp" srcset="/img/B_-08aAIMK-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/B_-08aAIMK-900.jpeg" width="900" height="661"></picture></p>
+<p>After the VM has finished initializing, power it off and remove the init.iso drive—it only needs to run during the first boot.</p>
+<p>You can check the output of the cloud-init scripts with <code>sudo cat /var/log/cloud-init-output.log</code></p>
+<p>Tip:</p>
+<p>To create a VM for Apple Silicon (aarch64), follow these steps:</p>
+<ul>
+<li>Choose <code>Virtualize</code>, since Apple Silicon is ARM-based.</li>
+<li>Use <code>arm64</code> cloud images.</li>
+<li>For Ubuntu, the process is almost the same - except you don’t need to disable UEFI boot.</li>
+<li>Don’t forget to extract the <code>*.img.xz</code> file before using it.</li>
+</ul>
+<p>Happy coding!</p>
+
+<ul class="links-nextprev"><li>Previous: <a href="/blog/crio-in-kind/">Use CRI-O Container Runtime with KIND</a></li>
+</ul>
+
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /blog/development-on-mac-with-utm/ -->
+	</body>
+</html>
