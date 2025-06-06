@@ -348,9 +348,29 @@ h2 + .header-anchor {
   margin-top: 16px;
 } */
 
-.penguin img {
-  width: 5%;
-  max-width: 10%;
+.about {
+  display: flex;
+  align-items: center;
+}
+
+.about p {
+  align-self: flex-start;
+  margin-top: 0;
+  padding: 10px;
+  padding-top: 0;
+}
+
+.about img {
+  width: 30%;
+}
+
+@media (max-width:640px){
+    .about img {
+        display:none;
+    }
+	.about p {
+      padding-left: 0;
+	}
 }
 
 img {

@@ -10,11 +10,11 @@
 		<meta name="title" property="og:title" content="Write integration tests with dockertest in Golang">
 		<meta name="description" property="og:description" content="In this tutorial, we explore how to use dockertest for integration tests.">
 		<meta property="og:url" content="https://rkiselenko.dev/blog/dockertest/">
-		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me.jpg">
 		<meta name="twitter:card" content="summary">
 		<meta name="keywords" content="posts,docker,golang,tests"/>
 		<meta name="twitter:site" content="@shindu666">
-		<meta name="twitter:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/me.jpg">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet" />
@@ -544,9 +544,29 @@ h2 + .header-anchor {
   margin-top: 16px;
 } */
 
-.penguin img {
-  width: 5%;
-  max-width: 10%;
+.about {
+  display: flex;
+  align-items: center;
+}
+
+.about p {
+  align-self: flex-start;
+  margin-top: 0;
+  padding: 10px;
+  padding-top: 0;
+}
+
+.about img {
+  width: 30%;
+}
+
+@media (max-width:640px){
+    .about img {
+        display:none;
+    }
+	.about p {
+      padding-left: 0;
+	}
 }
 
 img {

@@ -10,11 +10,11 @@
 		<meta name="title" property="og:title" content="rkiselenko.dev">
 		<meta name="description" property="og:description" content="Insights from the Daily Life of a Engineer">
 		<meta property="og:url" content="https://rkiselenko.dev/about/">
-		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me.jpg">
 		<meta name="twitter:card" content="summary">
 		<meta name="keywords" content="blog, golang, kubernetes, clouds"/>
 		<meta name="twitter:site" content="@shindu666">
-		<meta name="twitter:image" content="https://rkiselenko.dev/img/me_photo.jpg">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/me.jpg">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet" />
@@ -377,9 +377,29 @@ h2 + .header-anchor {
   margin-top: 16px;
 } */
 
-.penguin img {
-  width: 5%;
-  max-width: 10%;
+.about {
+  display: flex;
+  align-items: center;
+}
+
+.about p {
+  align-self: flex-start;
+  margin-top: 0;
+  padding: 10px;
+  padding-top: 0;
+}
+
+.about img {
+  width: 30%;
+}
+
+@media (max-width:640px){
+    .about img {
+        display:none;
+    }
+	.about p {
+      padding-left: 0;
+	}
 }
 
 img {
@@ -615,8 +635,10 @@ pre[class*="language-"] {
 
 		<main id="skip">
 			<h1>About Me</h1>
-<div class="penguin"><picture><source type="image/gif" srcset="/img/FeW0tmYL8_-128.gif 128w"><source type="image/avif" srcset="/img/FeW0tmYL8_-128.avif 128w"><img alt="Dance penguin" loading="lazy" decoding="async" src="/img/FeW0tmYL8_-128.webp" width="128" height="2560"></picture></div>
-<p>As a devoted father, loving husband, and passionate programmer, I wear many hats! My main focus is on <code>Golang</code>, but I also enjoy working with <code>Python</code>, <code>JavaScript</code>, and <code>Bourne shell</code>. I've gathered valuable experience in various cloud service models, including <code>SaaS</code>, <code>PaaS</code>, and <code>IaaS</code>. I'm quite skilled in <code>Kubernetes</code> and have had the pleasure of hands-on experience in both deployment and management, which has been an exciting journey!</p>
+<div class="about">
+  <picture><source type="image/gif" srcset="/img/6_JfoWRtXc-480.gif 480w"><source type="image/avif" srcset="/img/6_JfoWRtXc-480.avif 480w"><source type="image/webp" srcset="/img/6_JfoWRtXc-480.webp 480w"><img alt="Me" loading="lazy" decoding="async" src="/img/6_JfoWRtXc-480.jpeg" width="480" height="438"></picture>
+  <p>As a devoted father, loving husband, and passionate programmer, I wear many hats! My main focus is on <code>Golang</code>, but I also enjoy working with <code>Python</code>, <code>JavaScript</code>, and <code>Bourne shell</code>. I've gathered valuable experience in various cloud service models, including <code>SaaS</code>, <code>PaaS</code>, and <code>IaaS</code>. I'm quite skilled in <code>Kubernetes</code> and have had the pleasure of hands-on experience in both deployment and management, which has been an exciting journey!</p>
+</div>
 
 		</main>
 
