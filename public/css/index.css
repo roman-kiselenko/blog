@@ -1,7 +1,7 @@
 /* Defaults */
 
 :root {
-	--font-family: 'Work Sans', sans-serif;
+	--font-family: "Roboto", sans-serif;
 	--font-family-monospace: "Iosevka Web", monospace;
 }
 
@@ -13,12 +13,24 @@
 
 	--background-color: #ffffff;
 
+	--card-background-color: #ffffff;
+
+	--color-code-gray-90: #494949;
+	--color-code-gray-30: #dcdcdc;
+
 	--text-color: var(--color-gray-90);
 	--text-color-link: #45a2ea;
 	--text-color-link-active: #5f2b48;
 	--text-color-link-visited: #735063;
 
 	--syntax-tab-size: 2;
+
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
+		word-break: break-all;
+	    border-radius: 2px;
+	}
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,6 +38,12 @@
 		--color-gray-20: #e0e0e0;
 		--color-gray-50: #C0C0C0;
 		--color-gray-90: #dad8d8;
+
+
+		--color-code-gray-90: #676767;
+		--color-code-gray-30: #dcdcdc;
+
+		--card-background-color: #364253;
 
 		/* --text-color is assigned to --color-gray-_ above */
 		--text-color-link: #bbbbbb;
@@ -39,10 +57,11 @@
 		fill: white;
 	}
 
-	code {
-		background-color: var(--color-gray-50);
-		color: var(--background-color);
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
 		word-break: break-all;
+		border-radius: 2px;
 	}
 }
 
@@ -185,11 +204,10 @@ pre:not([class*="language-"]) {
 	word-break: normal;
 }
 
-code {
-	background-color: var(--color-gray-50);
+/* code {
+	background-color: var(--color-gray-20);
 	word-break: break-all;
-    border-radius: 3px;
-}
+} */
 
 /* Header */
 header {
@@ -350,7 +368,6 @@ h2 + .header-anchor {
 
 .about {
   display: flex;
-  align-items: center;
 }
 
 .about p {
@@ -361,6 +378,7 @@ h2 + .header-anchor {
 }
 
 .about img {
+  align-self: flex-start;
   width: 30%;
 }
 
@@ -421,4 +439,36 @@ img[width][height] {
 .codetitle-left + .codetitle-left {
 	clear: none;
 	margin-left: 2em;
+}
+
+.project {
+	.projects {
+		padding-top: 1em;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 20px;
+	}
+	.project-card {
+		background: var(--card-background-color);
+		border-radius: 10px;
+		padding: 20px;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+	.project-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+	}
+	.project-title {
+		font-size: 1.3em;
+		margin-bottom: 10px;
+		color: #007acc;
+	}
+	.project-description {
+		margin-bottom: 10px;
+	}
+	.project-tech {
+		font-size: 0.9em;
+		color: #555;
+	}
 }

@@ -9,7 +9,7 @@
 		<meta property="og:site_name" content="rkiselenko.dev">
 		<meta name="title" property="og:title" content="rkiselenko.dev">
 		<meta name="description" property="og:description" content="Insights from the Daily Life of a Engineer">
-		<meta property="og:url" content="https://rkiselenko.dev/">
+		<meta property="og:url" content="https://rkiselenko.dev/projects/">
 		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/me.jpg">
 		<meta name="twitter:card" content="summary">
 		<meta name="keywords" content="blog, golang, kubernetes, clouds"/>
@@ -26,8 +26,7 @@
 		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
 		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
-		<style>.postlist { counter-reset: start-from 11 }
-* { box-sizing: border-box; }
+		<style>* { box-sizing: border-box; }
 /* Defaults */
 
 :root {
@@ -649,9 +648,9 @@ pre[class*="language-"] {
 			<nav>
 				<h2 class="visually-hidden">Top level navigation menu</h2>
 					<ul class="nav">
-						<li class="nav-item"><a href="/" aria-current="page">Home</a></li>
+						<li class="nav-item"><a href="/">Home</a></li>
 						<li class="nav-item"><a href="/blog/">Archive</a></li>
-						<li class="nav-item"><a href="/projects/">Projects</a></li>
+						<li class="nav-item"><a href="/projects/" aria-current="page">Projects</a></li>
 						<li class="nav-item"><a href="/about/">About Me</a></li>
 					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
 					<li class="nav-item">
@@ -674,49 +673,27 @@ pre[class*="language-"] {
 		</header>
 
 		<main id="skip">
-			
+			<h1>Projects</h1>
 
-<h1>Latest 5 Posts</h1>
+<div class="project">
+<div class="projects">
+  <div class="project-card">
+    <div class="project-title"><a href='https://github.com/roman-kiselenko/teleskopio'>teleskopio</a></div>
+    <div class="project-description">
+      Small and beautiful Web Kubernetes client.
+    </div>
+    <div class="project-tech"><code>Golang</code>, <code>Kubernetes</code>, <code>React</code>, <code>Vite</code></div>
+  </div>
 
-
-
-
-<ol reversed class="postlist">
-
-	<li class="postlist-item">
-		<a href="/blog/development-on-mac-with-utm/" class="postlist-link">Development On Apple Silicon with UTM</a>
-		<time class="postlist-date" datetime="2025-04-17">17 April 2025</time>
-	</li>
-
-	<li class="postlist-item">
-		<a href="/blog/crio-in-kind/" class="postlist-link">Use CRI-O Container Runtime with KIND</a>
-		<time class="postlist-date" datetime="2024-05-08">08 May 2024</time>
-	</li>
-
-	<li class="postlist-item">
-		<a href="/blog/development-on-mac-with-lima/" class="postlist-link">Development On Apple Silicon with Lima</a>
-		<time class="postlist-date" datetime="2024-02-12">12 February 2024</time>
-	</li>
-
-	<li class="postlist-item">
-		<a href="/blog/define-validate-generate/" class="postlist-link">Define, Validate, Generate with CUE language</a>
-		<time class="postlist-date" datetime="2023-10-04">04 October 2023</time>
-	</li>
-
-	<li class="postlist-item">
-		<a href="/blog/grpc-in-golang/" class="postlist-link">Organize gRPC and protobuf code in Golang</a>
-		<time class="postlist-date" datetime="2023-08-27">27 August 2023</time>
-	</li>
-
-</ol>
-
-
-
-
-<p>5 more posts can be found in <a href="/blog/">the archive</a>.</p>
-
-
-
+  <div class="project-card">
+    <div class="project-title"><a href='https://github.com/roman-kiselenko/smolgit'>smolgit</a></div>
+    <div class="project-description">
+      A minimalist git server
+    </div>
+    <div class="project-tech"><code>Golang</code>, <code>Git</code></div>
+  </div>
+</div>
+</div>
 
 
 
@@ -724,6 +701,6 @@ pre[class*="language-"] {
 
 		<footer></footer>
 
-		<!-- Current page: / -->
+		<!-- Current page: /projects/ -->
 	</body>
 </html>

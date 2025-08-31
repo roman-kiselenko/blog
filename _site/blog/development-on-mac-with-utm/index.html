@@ -23,7 +23,7 @@
 		<link rel="manifest" href="/manifest.json" />
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
 		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
 		<style>/**
@@ -197,7 +197,7 @@ pre[class*="language-diff-"] {
 /* Defaults */
 
 :root {
-	--font-family: 'Work Sans', sans-serif;
+	--font-family: "Roboto", sans-serif;
 	--font-family-monospace: "Iosevka Web", monospace;
 }
 
@@ -209,12 +209,24 @@ pre[class*="language-diff-"] {
 
 	--background-color: #ffffff;
 
+	--card-background-color: #ffffff;
+
+	--color-code-gray-90: #494949;
+	--color-code-gray-30: #dcdcdc;
+
 	--text-color: var(--color-gray-90);
 	--text-color-link: #45a2ea;
 	--text-color-link-active: #5f2b48;
 	--text-color-link-visited: #735063;
 
 	--syntax-tab-size: 2;
+
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
+		word-break: break-all;
+	    border-radius: 2px;
+	}
 }
 
 @media (prefers-color-scheme: dark) {
@@ -222,6 +234,12 @@ pre[class*="language-diff-"] {
 		--color-gray-20: #e0e0e0;
 		--color-gray-50: #C0C0C0;
 		--color-gray-90: #dad8d8;
+
+
+		--color-code-gray-90: #676767;
+		--color-code-gray-30: #dcdcdc;
+
+		--card-background-color: #364253;
 
 		/* --text-color is assigned to --color-gray-_ above */
 		--text-color-link: #bbbbbb;
@@ -235,10 +253,11 @@ pre[class*="language-diff-"] {
 		fill: white;
 	}
 
-	code {
-		background-color: var(--color-gray-50);
-		color: var(--background-color);
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
 		word-break: break-all;
+		border-radius: 2px;
 	}
 }
 
@@ -381,11 +400,10 @@ pre:not([class*="language-"]) {
 	word-break: normal;
 }
 
-code {
-	background-color: var(--color-gray-50);
+/* code {
+	background-color: var(--color-gray-20);
 	word-break: break-all;
-    border-radius: 3px;
-}
+} */
 
 /* Header */
 header {
@@ -546,7 +564,6 @@ h2 + .header-anchor {
 
 .about {
   display: flex;
-  align-items: center;
 }
 
 .about p {
@@ -557,6 +574,7 @@ h2 + .header-anchor {
 }
 
 .about img {
+  align-self: flex-start;
   width: 30%;
 }
 
@@ -618,6 +636,38 @@ img[width][height] {
 	clear: none;
 	margin-left: 2em;
 }
+
+.project {
+	.projects {
+		padding-top: 1em;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 20px;
+	}
+	.project-card {
+		background: var(--card-background-color);
+		border-radius: 10px;
+		padding: 20px;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+	.project-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+	}
+	.project-title {
+		font-size: 1.3em;
+		margin-bottom: 10px;
+		color: #007acc;
+	}
+	.project-description {
+		margin-bottom: 10px;
+	}
+	.project-tech {
+		font-size: 0.9em;
+		color: #555;
+	}
+}
 /* Message Box */
 .message-box {
 	--color-message-box: #ffc;
@@ -645,6 +695,7 @@ img[width][height] {
 					<ul class="nav">
 						<li class="nav-item"><a href="/">Home</a></li>
 						<li class="nav-item"><a href="/blog/">Archive</a></li>
+						<li class="nav-item"><a href="/projects/">Projects</a></li>
 						<li class="nav-item"><a href="/about/">About Me</a></li>
 					<li class="nav-item"><a href="/CV.pdf" target="_blank" title="@roman-kiselenko resume">CV</a></li>
 					<li class="nav-item">
@@ -660,18 +711,6 @@ img[width][height] {
 					<li class="nav-item">
 						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
 							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="/feed/feed.xml" target="_blank" title="roman-kiselenko rss">
-						 <svg class="rss" fill="#000000" height="20" width="20" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-								viewBox="-143 145 512 512" xml:space="preserve">
-							<path d="M113,145c-141.4,0-256,114.6-256,256s114.6,256,256,256s256-114.6,256-256S254.4,145,113,145z M43.1,518.7
-								c-6.2,6.2-14.7,9.9-24.1,9.9c-9.4,0-17.8-3.8-24-9.9c-6.2-6.2-10-14.6-10-23.9c0-9.4,3.8-17.8,10-24s14.6-10,24-10
-								c9.4,0,17.9,3.8,24,10c6.2,6.2,10,14.6,10,24C53,504.2,49.2,512.6,43.1,518.7z M104.8,529c-0.1-32.1-12.5-62.3-35.1-84.9
-								c-22.6-22.6-52.8-35.2-84.7-35.2V360c46.6,0,88.7,19,119.3,49.6c30.6,30.6,49.5,72.8,49.6,119.4H104.8z M192,529
-								c-0.1-114.2-92.8-207.1-206.9-207.1V273c70.6,0,134.5,28.7,180.8,75.1c46.3,46.4,75,110.3,75.1,180.9H192z"/>
-							</svg>
 						</a>
 					</li>
 				</ul>
@@ -694,7 +733,7 @@ img[width][height] {
 <div class="message-box">
 <p>"UTM is an app for running other operating systems on your iPhone or iPad. It is not for running iOS on other systems. This allows you, among other things, to run Windows or Linux on your iOS device at a usable speed." – UTM Website
 </div>
-<p><picture><source type="image/gif" srcset="/img/_LgTXEGM9x-900.gif 900w"><source type="image/avif" srcset="/img/_LgTXEGM9x-900.avif 900w"><source type="image/webp" srcset="/img/_LgTXEGM9x-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/_LgTXEGM9x-900.jpeg" width="900" height="660"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/_LgTXEGM9x-900.gif 900w"><source type="image/avif" srcset="/img/_LgTXEGM9x-900.avif 900w"><source type="image/webp" srcset="/img/_LgTXEGM9x-900.webp 900w"><img src="/img/_LgTXEGM9x-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="660"></picture></p>
 <p>In this article, I'll show you how to use <a href="https://getutm.app/">UTM VMs</a> virtual machines to create Linux development environments on Apple Silicon.</p>
 <p>This approach builds on the technique I described in <a href="/blog/development-on-mac-with-lima">here</a>.</p>
 <h3 id="dependencies" tabindex="-1">Dependencies <a class="header-anchor" href="#dependencies">#</a></h3>
@@ -780,30 +819,30 @@ img[width][height] {
 <span class="token function">mkisofs</span> <span class="token parameter variable">-output</span> init.iso <span class="token parameter variable">-volid</span> cidata <span class="token parameter variable">-joliet</span> <span class="token parameter variable">-rock</span> <span class="token punctuation">{</span>user-data,meta-data<span class="token punctuation">}</span></code></pre>
 <h3 id="create-vm" tabindex="-1">Create VM <a class="header-anchor" href="#create-vm">#</a></h3>
 <p>Create VM, chose Emulate:</p>
-<p><picture><source type="image/gif" srcset="/img/33dhKW_moC-900.gif 900w"><source type="image/avif" srcset="/img/33dhKW_moC-900.avif 900w"><source type="image/webp" srcset="/img/33dhKW_moC-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/33dhKW_moC-900.jpeg" width="900" height="652"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/33dhKW_moC-900.gif 900w"><source type="image/avif" srcset="/img/33dhKW_moC-900.avif 900w"><source type="image/webp" srcset="/img/33dhKW_moC-900.webp 900w"><img src="/img/33dhKW_moC-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="652"></picture></p>
 <p>Chose Other:</p>
-<p><picture><source type="image/gif" srcset="/img/eRe6E24zN4-900.gif 900w"><source type="image/avif" srcset="/img/eRe6E24zN4-900.avif 900w"><source type="image/webp" srcset="/img/eRe6E24zN4-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/eRe6E24zN4-900.jpeg" width="900" height="648"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/eRe6E24zN4-900.gif 900w"><source type="image/avif" srcset="/img/eRe6E24zN4-900.avif 900w"><source type="image/webp" srcset="/img/eRe6E24zN4-900.webp 900w"><img src="/img/eRe6E24zN4-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="648"></picture></p>
 <p>No changes in Hardware:</p>
-<p><picture><source type="image/gif" srcset="/img/x-GhIz-RzX-900.gif 900w"><source type="image/avif" srcset="/img/x-GhIz-RzX-900.avif 900w"><source type="image/webp" srcset="/img/x-GhIz-RzX-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/x-GhIz-RzX-900.jpeg" width="900" height="649"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/x-GhIz-RzX-900.gif 900w"><source type="image/avif" srcset="/img/x-GhIz-RzX-900.avif 900w"><source type="image/webp" srcset="/img/x-GhIz-RzX-900.webp 900w"><img src="/img/x-GhIz-RzX-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="649"></picture></p>
 <p>Use <code>8GB</code> disk, we dont need it and will remove it later.</p>
 <p>In Summary name the VM and check <code>Open VM Settings</code>:</p>
-<p><picture><source type="image/gif" srcset="/img/XyFnZeSbG_-900.gif 900w"><source type="image/avif" srcset="/img/XyFnZeSbG_-900.avif 900w"><source type="image/webp" srcset="/img/XyFnZeSbG_-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/XyFnZeSbG_-900.jpeg" width="900" height="651"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/XyFnZeSbG_-900.gif 900w"><source type="image/avif" srcset="/img/XyFnZeSbG_-900.avif 900w"><source type="image/webp" srcset="/img/XyFnZeSbG_-900.webp 900w"><img src="/img/XyFnZeSbG_-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="651"></picture></p>
 <p>Uncheck <code>UEFI Boot</code>:</p>
-<p><picture><source type="image/gif" srcset="/img/XC6rVytqkq-900.gif 900w"><source type="image/avif" srcset="/img/XC6rVytqkq-900.avif 900w"><source type="image/webp" srcset="/img/XC6rVytqkq-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/XC6rVytqkq-900.jpeg" width="900" height="648"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/XC6rVytqkq-900.gif 900w"><source type="image/avif" srcset="/img/XC6rVytqkq-900.avif 900w"><source type="image/webp" srcset="/img/XC6rVytqkq-900.webp 900w"><img src="/img/XC6rVytqkq-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="648"></picture></p>
 <p>Remove <code>Display</code>, <code>Sound</code> with rigth mouse click, and add <code>Serial</code> -&gt; <code>Built-In</code>:</p>
-<p><picture><source type="image/gif" srcset="/img/YPTDgqEhFk-900.gif 900w"><source type="image/avif" srcset="/img/YPTDgqEhFk-900.avif 900w"><source type="image/webp" srcset="/img/YPTDgqEhFk-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/YPTDgqEhFk-900.jpeg" width="900" height="648"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/YPTDgqEhFk-900.gif 900w"><source type="image/avif" srcset="/img/YPTDgqEhFk-900.avif 900w"><source type="image/webp" srcset="/img/YPTDgqEhFk-900.webp 900w"><img src="/img/YPTDgqEhFk-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="648"></picture></p>
 <p>Remove created <code>Drive</code>, and add new one <code>VirtiO</code>,
 <code>Import</code> the <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#dependencies">Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2</a></p>
-<p><picture><source type="image/gif" srcset="/img/mLLwXLEswf-490.gif 490w"><source type="image/avif" srcset="/img/mLLwXLEswf-490.avif 490w"><source type="image/webp" srcset="/img/mLLwXLEswf-490.webp 490w"><img alt="" loading="lazy" decoding="async" src="/img/mLLwXLEswf-490.jpeg" width="490" height="316"></picture></p>
-<p><picture><source type="image/gif" srcset="/img/7r6y5QrvrR-900.gif 900w"><source type="image/avif" srcset="/img/7r6y5QrvrR-900.avif 900w"><source type="image/webp" srcset="/img/7r6y5QrvrR-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/7r6y5QrvrR-900.jpeg" width="900" height="653"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/mLLwXLEswf-490.gif 490w"><source type="image/avif" srcset="/img/mLLwXLEswf-490.avif 490w"><source type="image/webp" srcset="/img/mLLwXLEswf-490.webp 490w"><img src="/img/mLLwXLEswf-490.jpeg" alt="" loading="lazy" decoding="async" width="490" height="316"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/7r6y5QrvrR-900.gif 900w"><source type="image/avif" srcset="/img/7r6y5QrvrR-900.avif 900w"><source type="image/webp" srcset="/img/7r6y5QrvrR-900.webp 900w"><img src="/img/7r6y5QrvrR-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="653"></picture></p>
 <p>Create another one <code>Drive</code> -&gt; <code>VirtiO</code>,
 import the <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#dependencies-for-vm">init.iso</a></p>
-<p><picture><source type="image/gif" srcset="/img/4JspUqD-is-900.gif 900w"><source type="image/avif" srcset="/img/4JspUqD-is-900.avif 900w"><source type="image/webp" srcset="/img/4JspUqD-is-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/4JspUqD-is-900.jpeg" width="900" height="653"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/4JspUqD-is-900.gif 900w"><source type="image/avif" srcset="/img/4JspUqD-is-900.avif 900w"><source type="image/webp" srcset="/img/4JspUqD-is-900.webp 900w"><img src="/img/4JspUqD-is-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="653"></picture></p>
 <p>Run VM, if everything goes right you'll see boot terminal, like on the image below:</p>
-<p><picture><source type="image/gif" srcset="/img/NRbwvJX1q_-900.gif 900w"><source type="image/avif" srcset="/img/NRbwvJX1q_-900.avif 900w"><source type="image/webp" srcset="/img/NRbwvJX1q_-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/NRbwvJX1q_-900.jpeg" width="900" height="721"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/NRbwvJX1q_-900.gif 900w"><source type="image/avif" srcset="/img/NRbwvJX1q_-900.avif 900w"><source type="image/webp" srcset="/img/NRbwvJX1q_-900.webp 900w"><img src="/img/NRbwvJX1q_-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="721"></picture></p>
 <p>Wait until the login screen appears. The default username is fedora and the password is password, as defined in our cloud-init script.</p>
 <p>Give it a moment after logging in <a href="/blog/development-on-mac-with-utm/development-on-mac-with-lima/#cloud-init">cloud-init script.</a> will need some time to finish setting everything up.</p>
-<p><picture><source type="image/gif" srcset="/img/B_-08aAIMK-900.gif 900w"><source type="image/avif" srcset="/img/B_-08aAIMK-900.avif 900w"><source type="image/webp" srcset="/img/B_-08aAIMK-900.webp 900w"><img alt="" loading="lazy" decoding="async" src="/img/B_-08aAIMK-900.jpeg" width="900" height="661"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/B_-08aAIMK-900.gif 900w"><source type="image/avif" srcset="/img/B_-08aAIMK-900.avif 900w"><source type="image/webp" srcset="/img/B_-08aAIMK-900.webp 900w"><img src="/img/B_-08aAIMK-900.jpeg" alt="" loading="lazy" decoding="async" width="900" height="661"></picture></p>
 <p>After the VM has finished initializing, power it off and remove the init.iso drive—it only needs to run during the first boot.</p>
 <p>You can check the output of the cloud-init scripts with <code>sudo cat /var/log/cloud-init-output.log</code></p>
 <p>Tip:</p>
