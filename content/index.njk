@@ -3,11 +3,38 @@ layout: layouts/home.njk
 eleventyNavigation:
   key: Home
   order: 1
-numberOfLatestPostsToShow: 5
+numberOfLatestPostsToShow: 2
 ---
+
+<div class="about">
+	<h1>About Me</h1>
+	<br/>
+	<p>
+		Hi! My name is <b>Roman Kiselenko</b>. I’m a <b> Golang Engineer </b> / <b> Platform Engineer </b> / <b> DevOps </b> passionate about building and scaling infrastructure on <b>Kubernetes</b> and clouds.
+		<br/>
+		<br/>
+		Over the years, I’ve worked with on-prem and managed clusters (<b>AWS</b>, <b>GCP</b>, <b>OpenShift</b>, <b>K3s</b>).
+		<br/>
+		Designed reliable CI/CD pipelines (<b>Gitlab Pipeline</b>, <b>Github Actions</b>, <b>Tekton</b>).
+		<br/>
+		Managed infrastructure (<b>Terraform</b>, <b>Ansible</b>).
+		<br/>
+		Deploying <b>Kubernetes</b> with (<b>rke</b>, <b>kubespray</b>, <b>kubeadm</b>, <b>helm</b>).
+	    <br/>
+		Ensured secure, resilient networking (<b>Calico</b>, <b>Cilium</b>, <b>Istio</b>, and <b>MetalLB</b>).
+		<br/>
+		I’m also an <a target="_blank" href="https://github.com/roman-kiselenko">active open source contributor</a> in the <b> Kubernetes </b> ecosystem, enjoying sharing knowledge and helping improve community tools. I develop internal automation tools in Golang to simplify workflows and enhance cluster management.<br/>
+		<br/>
+		Outside of work, I’m a <b> husband </b> and <b>father</b>, balancing my career with family life and personal projects <a target="_blank" href="https://github.com/teleskopio/teleskopio">teleskopio</a>, <a target="_blank" href="https://github.com/roman-kiselenko/smolgit">smolgit</a>.
+		<br/>
+		Let's connect: <a target="_blank" href="https://www.linkedin.com/in/roman-kiselenko/">Linkedin</a>
+		<a target="_blank" href="https://github.com/roman-kiselenko">Github</a>
+	</p>
+</div>
 {% set postsCount = collections.posts | length %}
 {% set latestPostsCount = postsCount | min(numberOfLatestPostsToShow) %}
-<h1>Latest {{ latestPostsCount }} Post{% if latestPostsCount != 1 %}s{% endif %}</h1>
+<h1>Latest {{ latestPostsCount }} Post{% if latestPostsCount != 1 %}s{% endif %}
+</h1>
 
 {% set postslist = collections.posts | head(-1 * numberOfLatestPostsToShow) %}
 {% set postslistCounter = postsCount %}
@@ -15,14 +42,5 @@ numberOfLatestPostsToShow: 5
 
 {% set morePosts = postsCount - numberOfLatestPostsToShow %}
 {% if morePosts > 0 %}
-<p>{{ morePosts }} more post{% if morePosts != 1 %}s{% endif %} can be found in <a href="/blog/">the archive</a>.</p>
+	<p>{{ morePosts }} more post{% if morePosts != 1 %}s{% endif %} can be found <a href="/blog/">here</a>.</p>
 {% endif %}
-
-{# List every content page in the project #}
-{#
-<ul>
-	{%- for entry in collections.all %}
-	<li><a href="{{ entry.url }}"><code>{{ entry.url }}</code></a></li>
-	{%- endfor %}
-</ul>
-#}

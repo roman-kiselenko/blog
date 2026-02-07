@@ -17,16 +17,17 @@
 		<meta name="twitter:image" content="https://rkiselenko.dev/img/crio-in-kind.jpg">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet" />
+		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet"/>
 		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
-		<link rel="manifest" href="/manifest.json" />
+		<link rel="manifest" href="/manifest.json"/>
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap" rel="stylesheet">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
 		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
-		<style>/**
+		<style>
+			/**
  * prism.js tomorrow night eighties for JavaScript, CoffeeScript, CSS and HTML
  * Based on https://github.com/chriskempson/tomorrow-theme
  * @author Rose Pritchard
@@ -197,7 +198,11 @@ pre[class*="language-diff-"] {
 /* Defaults */
 
 :root {
-	--font-family: "Roboto", sans-serif;
+	--font-family: "Lora", sans-serif;
+	--font-family-heading: "Playfair", sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 400;
+	font-style: normal;
 	--font-family-monospace: "Iosevka Web", monospace;
 }
 
@@ -242,9 +247,9 @@ pre[class*="language-diff-"] {
 		--card-background-color: #364253;
 
 		/* --text-color is assigned to --color-gray-_ above */
-		--text-color-link: #bbbbbb;
+		--text-color-link: #a5a5a5;
 		--text-color-link-active: #818181;
-		--text-color-link-visited: #19a4e9;
+		--text-color-link-visited: #72a697;
 
 		--background-color: #15202b;
 	}
@@ -275,6 +280,12 @@ body {
 	color: var(--text-color);
 	background-color: var(--background-color);
 }
+
+b {
+	font-family: var(--font-family);
+	font-weight: 600;
+}
+
 html {
 	overflow-y: scroll;
 }
@@ -289,6 +300,7 @@ blockquote {
 	margin-left: 0px;
 	padding-left: 15px;
 	border-left: 5px solid var(--text-color-link);
+	--font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 /* https://www.a11yproject.com/posts/how-to-hide-content/ */
@@ -304,6 +316,8 @@ blockquote {
 
 h1,h2,h3,h4 {
 	margin-bottom: 0;
+	font-family: var(--font-family-heading);
+	font-weight: 600;
 }
 
 p:last-child {
@@ -371,7 +385,7 @@ code {
     /* border-radius: 5px; */
 	white-space: nowrap;
 	padding: 2px 2px 2px 2px;
-    font-size: 0.8em;
+    font-size: 0.9em;
 }
 code[class*="language-"] {
 	padding: 0px;
@@ -381,7 +395,7 @@ pre,
 code[class*="language-"] {
 	font-family: var(--font-family-monospace);
 	line-height: 1; /* 22px /16 */
-    font-size: 0.9em;
+    font-size: 1em;
 }
 pre:not([class*="language-"]) {
 	margin: .5em 0;
@@ -562,20 +576,25 @@ h2 + .header-anchor {
   margin-top: 16px;
 } */
 
-.about {
-  display: flex;
+.about p a {
+  text-decoration: underline;
+  color: var(--text-color-link-active);
 }
 
 .about p {
   align-self: flex-start;
   margin-top: 0;
-  padding: 10px;
+  /* padding: 10px; */
   padding-top: 0;
+}
+
+.about p b {
+	color: var(--text-color-link-visited);
 }
 
 .about img {
   align-self: flex-start;
-  width: 30%;
+  /* width: 20%; */
 }
 
 @media (max-width:640px){
@@ -636,38 +655,6 @@ img[width][height] {
 	clear: none;
 	margin-left: 2em;
 }
-
-.project {
-	.projects {
-		padding-top: 1em;
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 20px;
-	}
-	.project-card {
-		background: var(--card-background-color);
-		border-radius: 10px;
-		padding: 20px;
-		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-		transition: transform 0.2s, box-shadow 0.2s;
-	}
-	.project-card:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-	}
-	.project-title {
-		font-size: 1.3em;
-		margin-bottom: 10px;
-		color: #007acc;
-	}
-	.project-description {
-		margin-bottom: 10px;
-	}
-	.project-tech {
-		font-size: 0.9em;
-		color: #555;
-	}
-}
 /* Message Box */
 .message-box {
 	--color-message-box: #ffc;
@@ -685,28 +672,21 @@ img[width][height] {
 	.message-box {
 		--color-message-box: #082840;
 	}
-}</style>
+}
+		</style>
 	</head>
 	<body>
 		<a href="#skip" class="visually-hidden">Skip to main content</a>
 		<header>
 			<nav>
 				<h2 class="visually-hidden">Top level navigation menu</h2>
-					<ul class="nav">
-						<li class="nav-item"><a href="/">Home</a></li>
-						<li class="nav-item"><a href="/blog/">Archive</a></li>
-						<li class="nav-item"><a href="/projects/">Projects</a></li>
-						<li class="nav-item"><a href="/about/">About Me</a></li>
-					<li class="nav-item">
-						<a href="https://github.com/roman-kiselenko/" target="_blank" title="@roman-kiselenko on GitHub">
-							<svg class="github" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="https://stackoverflow.com/users/2057388/roman-kiselenko?tab=profile" target="_blank" title="roman-kiselenko on StackOverflow">
-							<svg class="stackoverflow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.869 5.903l3.114 4.567-.975.665-3.115-4.567.976-.665zm-2.812 2.585l4.84 2.838-.6 1.017-4.842-2.838.602-1.017zm-1.276 2.724l5.413 1.521-.291 1.077-5.428-1.458.306-1.14zm-.588 2.461l5.687.569-.103 1.12-5.691-.513.107-1.176zm-.169 2.16h5.835v1.167h-5.835v-1.167zm7.976 3.167h-10v-6h1v5h8v-5h1v6zm.195-8.602l-.945-5.446 1.162-.202.947 5.446-1.164.202z"/></svg>
-						</a>
-					</li>
+				<ul class="nav">
+						<li class="nav-item">
+							<a href="/">Home</a>
+						</li>
+						<li class="nav-item">
+							<a href="/blog/">Blog</a>
+						</li>
 				</ul>
 			</nav>
 		</header>

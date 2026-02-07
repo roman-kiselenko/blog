@@ -1,7 +1,11 @@
 /* Defaults */
 
 :root {
-	--font-family: "Roboto", sans-serif;
+	--font-family: "Lora", sans-serif;
+	--font-family-heading: "Playfair", sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 400;
+	font-style: normal;
 	--font-family-monospace: "Iosevka Web", monospace;
 }
 
@@ -46,9 +50,9 @@
 		--card-background-color: #364253;
 
 		/* --text-color is assigned to --color-gray-_ above */
-		--text-color-link: #bbbbbb;
+		--text-color-link: #a5a5a5;
 		--text-color-link-active: #818181;
-		--text-color-link-visited: #19a4e9;
+		--text-color-link-visited: #72a697;
 
 		--background-color: #15202b;
 	}
@@ -79,6 +83,12 @@ body {
 	color: var(--text-color);
 	background-color: var(--background-color);
 }
+
+b {
+	font-family: var(--font-family);
+	font-weight: 600;
+}
+
 html {
 	overflow-y: scroll;
 }
@@ -93,6 +103,7 @@ blockquote {
 	margin-left: 0px;
 	padding-left: 15px;
 	border-left: 5px solid var(--text-color-link);
+	--font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 /* https://www.a11yproject.com/posts/how-to-hide-content/ */
@@ -108,6 +119,8 @@ blockquote {
 
 h1,h2,h3,h4 {
 	margin-bottom: 0;
+	font-family: var(--font-family-heading);
+	font-weight: 600;
 }
 
 p:last-child {
@@ -175,7 +188,7 @@ code {
     /* border-radius: 5px; */
 	white-space: nowrap;
 	padding: 2px 2px 2px 2px;
-    font-size: 0.8em;
+    font-size: 0.9em;
 }
 code[class*="language-"] {
 	padding: 0px;
@@ -185,7 +198,7 @@ pre,
 code[class*="language-"] {
 	font-family: var(--font-family-monospace);
 	line-height: 1; /* 22px /16 */
-    font-size: 0.9em;
+    font-size: 1em;
 }
 pre:not([class*="language-"]) {
 	margin: .5em 0;
@@ -366,20 +379,25 @@ h2 + .header-anchor {
   margin-top: 16px;
 } */
 
-.about {
-  display: flex;
+.about p a {
+  text-decoration: underline;
+  color: var(--text-color-link-active);
 }
 
 .about p {
   align-self: flex-start;
   margin-top: 0;
-  padding: 10px;
+  /* padding: 10px; */
   padding-top: 0;
+}
+
+.about p b {
+	color: var(--text-color-link-visited);
 }
 
 .about img {
   align-self: flex-start;
-  width: 30%;
+  /* width: 20%; */
 }
 
 @media (max-width:640px){
@@ -439,36 +457,4 @@ img[width][height] {
 .codetitle-left + .codetitle-left {
 	clear: none;
 	margin-left: 2em;
-}
-
-.project {
-	.projects {
-		padding-top: 1em;
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 20px;
-	}
-	.project-card {
-		background: var(--card-background-color);
-		border-radius: 10px;
-		padding: 20px;
-		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-		transition: transform 0.2s, box-shadow 0.2s;
-	}
-	.project-card:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-	}
-	.project-title {
-		font-size: 1.3em;
-		margin-bottom: 10px;
-		color: #007acc;
-	}
-	.project-description {
-		margin-bottom: 10px;
-	}
-	.project-tech {
-		font-size: 0.9em;
-		color: #555;
-	}
 }
