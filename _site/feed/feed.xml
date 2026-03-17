@@ -4,12 +4,120 @@
 	<subtitle>Insights from the Daily Life of a Engineer</subtitle>
 	<link href="https://rkiselenko.dev/feed/feed.xml" rel="self"/>
 	<link href="https://rkiselenko.dev/"/>
-	<updated>2025-04-17T00:00:00Z</updated>
+	<updated>2026-03-17T00:00:00Z</updated>
 	<id>https://rkiselenko.dev/</id>
 	<author>
 		<name>Roman Kiselenko</name>
 		<email>roman.kiselenko.dev@gmail.com</email>
 	</author>
+	
+	<entry>
+		<title>Build the RAG with Golang and Local LLM</title>
+		<link href="https://rkiselenko.dev/blog/build-rag-for-fun/"/>
+		<updated>2026-03-17T00:00:00Z</updated>
+		<id>https://rkiselenko.dev/blog/build-rag-for-fun/</id>
+		<content type="html">&lt;div class=&quot;message-box&quot;&gt;
+&lt;h3&gt;RAG stands for Retrieval-Augmented Generation.&lt;/h3&gt;
+&lt;p&gt; It&#39;s a way to make AI assistants smarter by giving them access to specific information when answering questions.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/lmsCq6i-vt-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/lmsCq6i-vt-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/lmsCq6i-vt-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/lmsCq6i-vt-900.png&quot; alt=&quot;header image&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;682&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;I&#39;ve a good library of articles about kubernetes. It&#39;s a huge knowledge base I&#39;ve build for myself.
+It&#39;s hard to navigate on this library but every article has been carefully chosed.&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/TzUie4dL0j-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/TzUie4dL0j-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/TzUie4dL0j-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/TzUie4dL0j-900.png&quot; alt=&quot;obsidian example&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;344&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;Recently I&#39;ve found the wonderfull sources explaining how &lt;a href=&quot;https://github.com/pguso/rag-from-scratch/tree/main&quot;&gt;RAG&lt;/a&gt; works.
+I decide to try it.&lt;/p&gt;
+&lt;p&gt;Let&#39;s break it to steps:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Text Splitting &amp;amp; Chunking&lt;/li&gt;
+&lt;li&gt;Embedding&lt;/li&gt;
+&lt;li&gt;Vector Store&lt;/li&gt;
+&lt;li&gt;Generation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All those steps we can code in golang.&lt;/p&gt;
+&lt;p&gt;I&#39;m going to use local LLM and mlx apple AI framework. I need an openai-compatable API the &lt;a href=&quot;https://github.com/cubist38/mlx-openai-server&quot;&gt;mlx-openai-server&lt;/a&gt; works good.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;API server that provides OpenAI-compatible endpoints for MLX models.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The models I&#39;ve used:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://huggingface.co/mlx-community/Qwen3-4B-6bit&quot;&gt;mlx-community/Qwen3-4B-6bit&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://huggingface.co/mlx-community/Qwen3-Embedding-0.6B-8bit&quot;&gt;mlx-community/Qwen3-Embedding-0.6B-8bit&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Here is configuration file:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;model_path&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; mlx&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;community/Qwen3&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;4B&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;6bit
+  &lt;span class=&quot;token key atrule&quot;&gt;model_type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; lm
+  &lt;span class=&quot;token key atrule&quot;&gt;context_length&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;64000&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;prompt_cache_size&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;10&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;enable_auto_tool_choice&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;max_concurrency&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;tool_call_parser&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; qwen3_coder
+
+&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;model_path&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; mlx&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;community/Qwen3&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;Embedding&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;0.6B&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;8bit
+  &lt;span class=&quot;token key atrule&quot;&gt;model_type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; embeddings
+  &lt;span class=&quot;token key atrule&quot;&gt;context_length&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4000&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;max_concurrency&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The backend is based on &lt;a href=&quot;https://tmc.github.io/langchaingo/docs/&quot;&gt;langchaingo&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Vector database is redis.&lt;/p&gt;
+&lt;p&gt;The implementations is pretty simple.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Document loading&lt;/strong&gt;: Markdown files are loaded&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Embedding&lt;/strong&gt;: Documents are converted to vectors using an embedding model&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Storage&lt;/strong&gt;: Vectors are stored in Redis for fast access&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Query&lt;/strong&gt;: User questions are embedded and searched (top-20 results)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Generation&lt;/strong&gt;: LLM combines retrieved context with the query to generate answers&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Here is an example how I query the information about &lt;a href=&quot;https://github.com/iximiuz/conman&quot;&gt;&lt;code&gt;conman&lt;/code&gt;&lt;/a&gt;.
+I&#39;ve an article about it in my library.&lt;/p&gt;
+&lt;video width=&quot;100%&quot; height=&quot;auto&quot; controls=&quot;&quot;&gt;
+    &lt;source src=&quot;https://rkiselenko.dev/videos/showcase.mp4&quot; type=&quot;video/mp4&quot;&gt;
+    Your browser does not support the video tag.
+&lt;/video&gt;
+&lt;p&gt;And just to check if model able to answer me without additional knowledge.
+Let&#39;s question the model directly:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-X&lt;/span&gt; POST http://localhost:8000/v1/chat/completions &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+   &lt;span class=&quot;token parameter variable&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Content-Type: application/json&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+   &lt;span class=&quot;token parameter variable&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;{&quot;model&quot;: &quot;mlx-community/Qwen3-4B-6bit&quot;, &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Explain in simple words what is conman.&quot;}], &quot;temperature&quot;: 0.7 }&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; jq &lt;span class=&quot;token builtin class-name&quot;&gt;.&lt;/span&gt;
+
+&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token string&quot;&gt;&quot;id&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;chatcmpl_a47674f043174ea8b9c1d7d64bc7c919&quot;&lt;/span&gt;,
+  &lt;span class=&quot;token string&quot;&gt;&quot;object&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;chat.completion&quot;&lt;/span&gt;,
+  &lt;span class=&quot;token string&quot;&gt;&quot;created&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1773737528&lt;/span&gt;,
+  &lt;span class=&quot;token string&quot;&gt;&quot;model&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;mlx-community/Qwen3-4B-6bit&quot;&lt;/span&gt;,
+  &lt;span class=&quot;token string&quot;&gt;&quot;choices&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;token string&quot;&gt;&quot;finish_reason&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;stop&quot;&lt;/span&gt;,
+      &lt;span class=&quot;token string&quot;&gt;&quot;index&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;,
+      &lt;span class=&quot;token string&quot;&gt;&quot;message&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token string&quot;&gt;&quot;content&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;&amp;lt;think&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;Okay, the user wants a simple explanation of what a conman is. Let me start by recalling the definition. A conman is someone who deceives others for money or other benefits. But I need to break it down into simple terms.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;First, I should define the key elements: deception, intent to deceive, and the purpose (like getting money). Maybe use an example to make it clearer. For instance, a conman might pretend to be a wealthy person to get money from someone else.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;Wait, should I mention that it&#39;s illegal? Probably, since conman is a criminal act. But the user asked for simple words, so maybe not too detailed. Also, need to avoid jargon. Use everyday language.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;Check if there&#39;s a common example people know. Maybe a fake job offer, or a scam where someone pretends to be a friend. Also, note that conmen use tricks or lies to trick others.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;Make sure to explain that it&#39;s not just any lie, but a deliberate and deceptive scheme. Maybe mention that they target people&#39;s trust or emotions. Avoid using technical terms. Keep it straightforward.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;Also, think about the structure: start with a simple definition, then explain how they do it, maybe give an example, and mention the consequences. But the user might just want a basic definition. Let me confirm the main points.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;So, conman is someone who lies to get money or benefits. They use tricks to deceive people. Examples could be fraud, scams, fake jobs. It&#39;s illegal and unethical. Make sure to keep it simple and clear.&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&amp;lt;/think&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;&lt;span class=&quot;token entity&quot; title=&quot;&#92;n&quot;&gt;&#92;n&lt;/span&gt;A **conman** is someone who lies or tricks people to get money, goods, or other benefits. They use deception, like pretending to be someone else, creating fake situations, or exploiting people&#39;s trust, to cheat them out of something. For example, a conman might pretend to be a rich person to get money from someone else or fake a job offer to steal your time or money. It’s illegal and unethical, and conmen often target people’s emotions or trust to make them fall for their lies.&quot;&lt;/span&gt;,
+        &lt;span class=&quot;token string&quot;&gt;&quot;role&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;assistant&quot;&lt;/span&gt;,
+        &lt;span class=&quot;token string&quot;&gt;&quot;partial&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;,
+  &lt;span class=&quot;token string&quot;&gt;&quot;usage&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token string&quot;&gt;&quot;prompt_tokens&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;,
+    &lt;span class=&quot;token string&quot;&gt;&quot;total_tokens&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;432&lt;/span&gt;,
+    &lt;span class=&quot;token string&quot;&gt;&quot;completion_tokens&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;431&lt;/span&gt;,
+    &lt;span class=&quot;token string&quot;&gt;&quot;prompt_tokens_details&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;token string&quot;&gt;&quot;cached_tokens&quot;&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;17&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The answer is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A &lt;strong&gt;conman&lt;/strong&gt; is someone who lies or tricks people to get money, goods, or other benefits.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;At the end I&#39;m pretty exsited about this thing, without any additional fine-tune or some hard stuff like this I able to build a very cool thing just by myself.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&quot;https://github.com/roman-kiselenko/gorag-agent&quot;&gt;sources of gorag-agent&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;credits&quot; tabindex=&quot;-1&quot;&gt;Credits &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/build-rag-for-fun/#credits&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/pguso/rag-from-scratch/tree/main?tab=readme-ov-file&quot;&gt;RAG from scratch&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://tmc.github.io/langchaingo/docs/&quot;&gt;langchaingo&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/miskibin/chat-components/tree/main&quot;&gt;chatGPT like UI components built for React&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Happy coding!&lt;/p&gt;
+</content>
+	</entry>
 	
 	<entry>
 		<title>Development On Apple Silicon with UTM</title>

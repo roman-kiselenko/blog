@@ -22,126 +22,6 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/blog/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/golang/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/tests/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/docker/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/crio/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/cri/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/kind/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/kubernetes/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/k8s/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/yaml/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/json/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/cue/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/vm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/lima/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/arm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/macbook/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/apple-silicon/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/utm/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/design/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/grpc/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/tauri/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/rust/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/macos/</loc>
-		<lastmod>2023-08-12</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/blog/resilient-microservice/</loc>
 		<lastmod>2023-08-14</lastmod>
 	</url>
@@ -167,12 +47,147 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/</loc>
-		<lastmod>2024-06-30</lastmod>
+		<loc>https://rkiselenko.dev/blog/development-on-mac-with-utm/</loc>
+		<lastmod>2025-04-17</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/blog/development-on-mac-with-utm/</loc>
-		<lastmod>2025-04-17</lastmod>
+		<loc>https://rkiselenko.dev/blog/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/golang/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/tests/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/docker/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/llm/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/k8s/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/rag/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/crio/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/cri/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/kind/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/kubernetes/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/yaml/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/json/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/cue/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/vm/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/lima/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/arm/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/macbook/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/apple-silicon/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/utm/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/design/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/grpc/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/tauri/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/rust/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/macos/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/blog/build-rag-for-fun/</loc>
+		<lastmod>2026-03-17</lastmod>
 	</url>
 </urlset>

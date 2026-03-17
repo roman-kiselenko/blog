@@ -24,7 +24,10 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap" rel="stylesheet">
-
+		<link
+			href="https://unpkg.com/prismjs@1.20.0/themes/prism-okaidia.css"
+			rel="stylesheet"
+		/>
 		{#- Atom and JSON feeds included by default #}
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
 		<link rel="alternate" href="/feed/feed.json" type="application/json" title="{{ metadata.title }}">
@@ -45,7 +48,7 @@
 		{#- Add the contents of a file to the bundle #}
 		{%- css %}{% include "public/css/index.css" %}{% endcss %}
 		{#- Or add from node_modules #}
-		{%- css %}{% include "node_modules/prismjs/themes/prism-tomorrow.css" %}{% endcss %}
+		{# {%- css %}{% include "node_modules/prismjs/themes/prism-tomorrow.css" %}{% endcss %} #}
 		{%- css %}{% include "public/css/message-box.css" %}{% endcss %}
 
 		{#- Render the CSS bundle using Inlined CSS (for the fastest site performance in production) #}
