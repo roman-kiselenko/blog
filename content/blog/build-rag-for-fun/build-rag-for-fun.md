@@ -122,8 +122,6 @@ The answer is:
 
 At the end I'm pretty exsited about this thing, without any additional fine-tune or some hard stuff like this I able to build a very cool thing just by myself.
 
-The [sources of gorag-agent](https://github.com/roman-kiselenko/gorag-agent)
-
 ### Credits
 
 - <small>[RAG from scratch](https://github.com/pguso/rag-from-scratch/tree/main?tab=readme-ov-file)</small>

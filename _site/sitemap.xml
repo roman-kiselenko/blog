@@ -97,6 +97,21 @@
 	</url>
 	
 	<url>
+		<loc>https://rkiselenko.dev/tags/yaml/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/json/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/cue/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
 		<loc>https://rkiselenko.dev/tags/crio/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
@@ -117,27 +132,12 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/yaml/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/json/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/cue/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/vm/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/lima/</loc>
+		<loc>https://rkiselenko.dev/tags/utm/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
@@ -157,7 +157,7 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/utm/</loc>
+		<loc>https://rkiselenko.dev/tags/lima/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
