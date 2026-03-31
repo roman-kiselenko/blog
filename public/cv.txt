@@ -1,0 +1,74 @@
+# CV
+
+## PERSONAL INFORMATION
+name: Roman Kiselenko
+email: roman.kiselenko.dev@gmail.com
+linkedin: https://www.linkedin.com/in/roman-kiselenko/
+github: https://github.com/roman-kiselenko
+
+## PROFESSIONAL SUMMARY
+Golang Engineer with 10+ years of experience transforming infrastructure engineering for the AI era. Expert in Kubernetes, cloud-native architecture, and modern AI stacks. Proven track record of delivering production-grade LLM infrastructure and building robust development pipelines with AI-powered coding agents.
+
+## PROFESSIONAL EXPERIENCE
+
+### CURRENT ROLE
+position: Golang Engineer | DevOps & Platform Engineer | AI Infrastructure Specialist
+company: DNA
+start_date: 09.2025
+
+Key Responsibilities:
+- Building production-grade LLM infrastructure and AI systems
+- Designing and implementing Kubernetes-based solutions
+- Developing CI/CD pipelines with AI-powered coding agents
+- Optimizing local inference and RAG systems
+
+Achievements:
+- Successfully built robust development pipelines with coding agents
+- Deployed production-grade AI infrastructure on AWS, GCP, and on-prem environments
+- Implemented secure networking and service mesh solutions
+
+---
+
+## TECHNICAL SKILLS
+
+### Programming Languages
+- Golang (10+ years of experience)
+- Shell Scripting
+- Python
+
+### Cloud & Infrastructure
+- Kubernetes (rke, kubeadm, helm)
+- Service Mesh
+- Terraform (IaC)
+- Ansible
+- AWS (EC2, EKS, VPC, IAM)
+- GCP (GKE, Cloud Run, Compute Engine)
+- OpenShift
+
+### AI & Machine Learning
+- LLM Deployment & Optimization
+- RAG Systems
+- Agent Architecture
+- Model Inference Optimization
+- MCP Integration
+- Local Model Deployment
+
+### DevOps & CI/CD
+- CI/CD Pipeline Design
+- Automated Testing
+- Container Orchestration
+- Monitoring & Logging
+
+---
+
+## INTERESTS & ACTIVITIES
+- AI/ML Research
+- Open Source Contributions
+
+---
+
+## CONTACT
+- Email: roman.kiselenko.dev@gmail.com
+- LinkedIn: https://www.linkedin.com/in/roman-kiselenko/
+- Github: https://github.com/roman-kiselenko
+- Portfolio/Blog: https://rkiselenko.dev/
