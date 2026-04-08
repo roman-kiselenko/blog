@@ -9,13 +9,6 @@ github: https://github.com/roman-kiselenko
 ## PROFESSIONAL SUMMARY
 Golang Engineer with 10+ years of experience transforming infrastructure engineering for the AI era. Expert in Kubernetes, cloud-native architecture, and modern AI stacks. Proven track record of delivering production-grade LLM infrastructure and building robust development pipelines with AI-powered coding agents.
 
-## PROFESSIONAL EXPERIENCE
-
-### CURRENT ROLE
-position: Golang Engineer | DevOps & Platform Engineer | AI Infrastructure Specialist
-company: DNA
-start_date: 09.2025
-
 Key Responsibilities:
 - Building production-grade LLM infrastructure and AI systems
 - Designing and implementing Kubernetes-based solutions
