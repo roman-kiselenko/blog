@@ -17,20 +17,18 @@
 		<updated>2026-05-29T00:00:00Z</updated>
 		<id>https://rkiselenko.dev/blog/teleskopio-mcp/</id>
 		<content type="html">&lt;div class=&quot;message-box&quot;&gt;
-	This post I wrote just by hand, english is not my native language and I&#39;ve not use any LLM to fix or polish text.
+	This post I wrote just by hand, english is not my native language and I&#39;ve not use any LLM to fix or polish the text.
 &lt;/div&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.gif 880w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.avif 880w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.webp 880w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.png&quot; alt=&quot;teleskopio-mcp&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;880&quot; height=&quot;893&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;p&gt;I&#39;ve a pet project the &lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt;. It&#39;s a kubernetes web UI to overview and manage cluster.
 I started developing my own dashboard a year ago; &lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt; was born after struggling to manage clusters with the terminal.&lt;/p&gt;
-&lt;p&gt;One of the &lt;a href=&quot;https://github.com/teleskopio/teleskopio/issues/15&quot;&gt;planned feature was an MCP&lt;/a&gt; server implementationa. Since I&#39;m a big fun of local models, lurking a lot on the &lt;a href=&quot;https://www.reddit.com/r/LocalLLaMA/&quot;&gt;u/LocalLLaMA&lt;/a&gt; sub.
-I decide to add an &lt;a href=&quot;https://modelcontextprotocol.io/docs/getting-started/intro&quot;&gt;modelcontextprotocol&lt;/a&gt; server to the teleskopio.&lt;/p&gt;
+&lt;p&gt;One of the &lt;a href=&quot;https://github.com/teleskopio/teleskopio/issues/15&quot;&gt;planned feature was an MCP&lt;/a&gt; server implementation. Since I&#39;m a big fun of local models, lurking a lot on the &lt;a href=&quot;https://www.reddit.com/r/LocalLLaMA/&quot;&gt;u/LocalLLaMA&lt;/a&gt; sub.
+I decide to add an &lt;a href=&quot;https://modelcontextprotocol.io/docs/getting-started/intro&quot;&gt;modelcontextprotocol&lt;/a&gt; server to the teleskopio by using llama.cpp and local model.&lt;/p&gt;
 &lt;p&gt;The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.&lt;/p&gt;
 &lt;p&gt;First MVP integration is 3 tools, 1 prompt and completion accourding to the &lt;a href=&quot;https://modelcontextprotocol.io/docs/getting-started/intro&quot;&gt;modelcontextprotocol&lt;/a&gt;.
-As an MCP client I&#39;m going to use &lt;a href=&quot;https://github.com/ggml-org/llama.cpp&quot;&gt;llama.cpp&lt;/a&gt; becuase it has a very robust MCP and tools integration.&lt;/p&gt;
-&lt;p&gt;Here is the step by step guide (my host is MacOS):&lt;/p&gt;
-&lt;ol start=&quot;0&quot;&gt;
-&lt;li&gt;Use &lt;a href=&quot;https://github.com/abiosoft/colima&quot;&gt;colima&lt;/a&gt; as docker engine.&lt;/li&gt;
-&lt;/ol&gt;
+As an MCP client I&#39;m going to use &lt;a href=&quot;https://github.com/ggml-org/llama.cpp&quot;&gt;llama.cpp&lt;/a&gt; because it has a very robust MCP and tools integration.&lt;/p&gt;
+&lt;p&gt;Lets start (my host is MacOS):&lt;/p&gt;
+&lt;p&gt;Use &lt;a href=&quot;https://github.com/abiosoft/colima&quot;&gt;colima&lt;/a&gt; as docker engine.&lt;/p&gt;
 &lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;colima status
 INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; colima is running using macOS Virtualization.Framework
 INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; arch: aarch64
@@ -38,15 +36,11 @@ INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span c
 INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; mountType: virtiofs
 INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;docker&lt;/span&gt; socket: unix:///Users/roman/.colima/default/docker.sock
 INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; containerd socket: unix:///Users/roman/.colima/default/containerd.sock&lt;/code&gt;&lt;/pre&gt;
-&lt;ol&gt;
-&lt;li&gt;Spin up a &lt;a href=&quot;https://kind.sigs.k8s.io&quot;&gt;kind&lt;/a&gt; cluster.&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;Spin up a &lt;a href=&quot;https://kind.sigs.k8s.io&quot;&gt;kind&lt;/a&gt; cluster.&lt;/p&gt;
 &lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;&lt;span class=&quot;token function&quot;&gt;docker&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;ps&lt;/span&gt;
 CONTAINER ID   IMAGE                  COMMAND                  CREATED      STATUS       PORTS                       NAMES
 74a462cbf7de   kindest/node:v1.35.0   &lt;span class=&quot;token string&quot;&gt;&quot;/usr/local/bin/entr…&quot;&lt;/span&gt;   &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt; days ago   Up &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; hours   &lt;span class=&quot;token number&quot;&gt;127.0&lt;/span&gt;.0.1:50025-&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;6443&lt;/span&gt;/tcp   kind-control-plane&lt;/code&gt;&lt;/pre&gt;
-&lt;ol start=&quot;2&quot;&gt;
-&lt;li&gt;Run teleskopio with &lt;code&gt;mcp.enabled = true&lt;/code&gt;, (the way teleskopio &lt;a href=&quot;https://teleskopio.github.io/install/#install&quot;&gt;is deployed doesnt matter&lt;/a&gt;, it can be in the docker, on the host, by helm).&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;Run teleskopio with &lt;code&gt;mcp.enabled = true&lt;/code&gt;, (the way teleskopio &lt;a href=&quot;https://teleskopio.github.io/install/#install&quot;&gt;is deployed doesnt matter&lt;/a&gt;, it can be in the docker, on the host, by helm).&lt;/p&gt;
 &lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; config.yaml &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; yq .mcp
 enabled: &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;ol start=&quot;3&quot;&gt;
@@ -123,14 +117,15 @@ Return short report for the user.&lt;/code&gt;&lt;/pre&gt;
 &lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Action Required:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Fix image name for &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`bad-image-pod-example`&lt;/span&gt; and review container commands for the two &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Failed`&lt;/span&gt; pods.
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;conclusion&quot; tabindex=&quot;-1&quot;&gt;Conclusion &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/teleskopio-mcp/#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;TBH I&#39;m impressed, right now the MCP protocol (&lt;small&gt;&lt;a href=&quot;https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/&quot;&gt;it&#39;s still doubthfull does we need this protocol?&lt;/a&gt;&lt;/small&gt;) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it&#39;s strong enough to use it in everyday job. 🤔&lt;/p&gt;
+&lt;p&gt;TBH I&#39;m impressed, right now the MCP protocol (&lt;small&gt;&lt;a href=&quot;https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/&quot;&gt;it&#39;s still doubthfull does we need this protocol?&lt;/a&gt;&lt;/small&gt;) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it&#39;s strong enough to use it in everyday job. 🤔
+The MCP server is not merged yet and need a bunch of improvments but I think I&#39;ll release it soon.&lt;/p&gt;
 &lt;h3 id=&quot;credits&quot; tabindex=&quot;-1&quot;&gt;Credits &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/teleskopio-mcp/#credits&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/ggml-org/llama.cpp/pull/18655&quot;&gt;llama.cpp MCP support&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
 &lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/mark3labs/mcp-go&quot;&gt;mcp-go&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
 &lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Happy coding!&lt;/p&gt;
+&lt;p&gt;Thanks and Happy coding!&lt;/p&gt;
 </content>
 	</entry>
 	

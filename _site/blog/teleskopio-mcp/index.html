@@ -608,20 +608,18 @@ img[width][height] {
 </ul>
 
 <div class="message-box">
-	This post I wrote just by hand, english is not my native language and I've not use any LLM to fix or polish text.
+	This post I wrote just by hand, english is not my native language and I've not use any LLM to fix or polish the text.
 </div>
 <p><picture><source type="image/gif" srcset="/img/mvkvuiqD2C-880.gif 880w"><source type="image/avif" srcset="/img/mvkvuiqD2C-880.avif 880w"><source type="image/webp" srcset="/img/mvkvuiqD2C-880.webp 880w"><img src="/img/mvkvuiqD2C-880.png" alt="teleskopio-mcp" loading="lazy" decoding="async" width="880" height="893"></picture></p>
 <p>I've a pet project the <a href="https://teleskopio.github.io">teleskopio</a>. It's a kubernetes web UI to overview and manage cluster.
 I started developing my own dashboard a year ago; <a href="https://teleskopio.github.io">teleskopio</a> was born after struggling to manage clusters with the terminal.</p>
-<p>One of the <a href="https://github.com/teleskopio/teleskopio/issues/15">planned feature was an MCP</a> server implementationa. Since I'm a big fun of local models, lurking a lot on the <a href="https://www.reddit.com/r/LocalLLaMA/">u/LocalLLaMA</a> sub.
-I decide to add an <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a> server to the teleskopio.</p>
+<p>One of the <a href="https://github.com/teleskopio/teleskopio/issues/15">planned feature was an MCP</a> server implementation. Since I'm a big fun of local models, lurking a lot on the <a href="https://www.reddit.com/r/LocalLLaMA/">u/LocalLLaMA</a> sub.
+I decide to add an <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a> server to the teleskopio by using llama.cpp and local model.</p>
 <p>The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.</p>
 <p>First MVP integration is 3 tools, 1 prompt and completion accourding to the <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a>.
-As an MCP client I'm going to use <a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> becuase it has a very robust MCP and tools integration.</p>
-<p>Here is the step by step guide (my host is MacOS):</p>
-<ol start="0">
-<li>Use <a href="https://github.com/abiosoft/colima">colima</a> as docker engine.</li>
-</ol>
+As an MCP client I'm going to use <a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> because it has a very robust MCP and tools integration.</p>
+<p>Lets start (my host is MacOS):</p>
+<p>Use <a href="https://github.com/abiosoft/colima">colima</a> as docker engine.</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh">colima status
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> colima is running using macOS Virtualization.Framework
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> arch: aarch64
@@ -629,15 +627,11 @@ INFO<span class="token punctuation">[</span>0000<span class="token punctuation">
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> mountType: virtiofs
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> <span class="token function">docker</span> socket: unix:///Users/roman/.colima/default/docker.sock
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> containerd socket: unix:///Users/roman/.colima/default/containerd.sock</code></pre>
-<ol>
-<li>Spin up a <a href="https://kind.sigs.k8s.io">kind</a> cluster.</li>
-</ol>
+<p>Spin up a <a href="https://kind.sigs.k8s.io">kind</a> cluster.</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh"><span class="token function">docker</span> <span class="token function">ps</span>
 CONTAINER ID   IMAGE                  COMMAND                  CREATED      STATUS       PORTS                       NAMES
 74a462cbf7de   kindest/node:v1.35.0   <span class="token string">"/usr/local/bin/entr…"</span>   <span class="token number">4</span> days ago   Up <span class="token number">2</span> hours   <span class="token number">127.0</span>.0.1:50025-<span class="token operator">></span><span class="token number">6443</span>/tcp   kind-control-plane</code></pre>
-<ol start="2">
-<li>Run teleskopio with <code>mcp.enabled = true</code>, (the way teleskopio <a href="https://teleskopio.github.io/install/#install">is deployed doesnt matter</a>, it can be in the docker, on the host, by helm).</li>
-</ol>
+<p>Run teleskopio with <code>mcp.enabled = true</code>, (the way teleskopio <a href="https://teleskopio.github.io/install/#install">is deployed doesnt matter</a>, it can be in the docker, on the host, by helm).</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh"><span class="token function">cat</span> config.yaml <span class="token operator">|</span> yq .mcp
 enabled: <span class="token boolean">true</span></code></pre>
 <ol start="3">
@@ -714,14 +708,15 @@ Return short report for the user.</code></pre>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Action Required:</span><span class="token punctuation">**</span></span> Fix image name for <span class="token code-snippet code keyword">`bad-image-pod-example`</span> and review container commands for the two <span class="token code-snippet code keyword">`Failed`</span> pods.
 </code></pre>
 <h3 id="conclusion" tabindex="-1">Conclusion <a class="header-anchor" href="#conclusion">#</a></h3>
-<p>TBH I'm impressed, right now the MCP protocol (<small><a href="https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/">it's still doubthfull does we need this protocol?</a></small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. 🤔</p>
+<p>TBH I'm impressed, right now the MCP protocol (<small><a href="https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/">it's still doubthfull does we need this protocol?</a></small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. 🤔
+The MCP server is not merged yet and need a bunch of improvments but I think I'll release it soon.</p>
 <h3 id="credits" tabindex="-1">Credits <a class="header-anchor" href="#credits">#</a></h3>
 <ul>
 <li><small><a href="https://github.com/ggml-org/llama.cpp/pull/18655">llama.cpp MCP support</a></small></li>
 <li><small><a href="https://github.com/mark3labs/mcp-go">mcp-go</a></small></li>
 <li><small><a href="https://teleskopio.github.io">teleskopio</a></small></li>
 </ul>
-<p>Happy coding!</p>
+<p>Thanks and Happy coding!</p>
 
 		<ul class="links-nextprev">
 				<li>Previous: <a href="/blog/build-rag-for-fun/">Build the RAG with Golang and Local LLM</a>

@@ -13,7 +13,7 @@ tags:
 ---
 
 <div class="message-box">
-	This post I wrote just by hand, english is not my native language and I've not use any LLM to fix or polish text.
+	This post I wrote just by hand, english is not my native language and I've not use any LLM to fix or polish the text.
 </div>
 
 {% image "./teleskopio+mcp.png", "teleskopio-mcp", [900] %}
@@ -22,17 +22,17 @@ tags:
 I've a pet project the [teleskopio](https://teleskopio.github.io). It's a kubernetes web UI to overview and manage cluster.
 I started developing my own dashboard a year ago; [teleskopio](https://teleskopio.github.io) was born after struggling to manage clusters with the terminal.
 
-One of the [planned feature was an MCP](https://github.com/teleskopio/teleskopio/issues/15) server implementationa. Since I'm a big fun of local models, lurking a lot on the [u/LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) sub.
-I decide to add an [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro) server to the teleskopio.
+One of the [planned feature was an MCP](https://github.com/teleskopio/teleskopio/issues/15) server implementation. Since I'm a big fun of local models, lurking a lot on the [u/LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) sub.
+I decide to add an [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro) server to the teleskopio by using llama.cpp and local model.
 
 The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.
 
 First MVP integration is 3 tools, 1 prompt and completion accourding to the [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro).
-As an MCP client I'm going to use [llama.cpp](https://github.com/ggml-org/llama.cpp) becuase it has a very robust MCP and tools integration.
+As an MCP client I'm going to use [llama.cpp](https://github.com/ggml-org/llama.cpp) because it has a very robust MCP and tools integration.
 
-Here is the step by step guide (my host is MacOS):
+Lets start (my host is MacOS):
 
-0. Use [colima](https://github.com/abiosoft/colima) as docker engine.
+Use [colima](https://github.com/abiosoft/colima) as docker engine.
 
 ```sh
 colima status
@@ -44,7 +44,7 @@ INFO[0000] docker socket: unix:///Users/roman/.colima/default/docker.sock
 INFO[0000] containerd socket: unix:///Users/roman/.colima/default/containerd.sock
 ```
 
-1. Spin up a [kind](https://kind.sigs.k8s.io) cluster.
+Spin up a [kind](https://kind.sigs.k8s.io) cluster.
 
 ```sh
 docker ps
@@ -52,7 +52,7 @@ CONTAINER ID   IMAGE                  COMMAND                  CREATED      STAT
 74a462cbf7de   kindest/node:v1.35.0   "/usr/local/bin/entr…"   4 days ago   Up 2 hours   127.0.0.1:50025->6443/tcp   kind-control-plane
 ```
 
-2. Run teleskopio with `mcp.enabled = true`, (the way teleskopio [is deployed doesnt matter](https://teleskopio.github.io/install/#install), it can be in the docker, on the host, by helm).
+Run teleskopio with `mcp.enabled = true`, (the way teleskopio [is deployed doesnt matter](https://teleskopio.github.io/install/#install), it can be in the docker, on the host, by helm).
 
 ```sh
 cat config.yaml | yq .mcp
@@ -152,6 +152,7 @@ Here is the report:
 ### Conclusion
 
 TBH I'm impressed, right now the MCP protocol (<small>[it's still doubthfull does we need this protocol?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/)</small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. :thinking:
+The MCP server is not merged yet and need a bunch of improvments but I think I'll release it soon.
 
 ### Credits
 
@@ -159,4 +160,4 @@ TBH I'm impressed, right now the MCP protocol (<small>[it's still doubthfull doe
 - <small>[mcp-go](https://github.com/mark3labs/mcp-go)</small>
 - <small>[teleskopio](https://teleskopio.github.io)</small>
 
-Happy coding!
+Thanks and Happy coding!
