@@ -31,19 +31,20 @@ Achievements:
 
 ### Cloud & Infrastructure
 - Kubernetes (rke, kubeadm, helm)
-- Service Mesh
-- Terraform (IaC)
-- Ansible
 - AWS (EC2, EKS, VPC, IAM)
 - GCP (GKE, Cloud Run, Compute Engine)
 - OpenShift
+- Service Mesh
+- Terraform (IaC)
+- Ansible
+- ArgoCD (GitOps)
 
 ### AI & Machine Learning
 - LLM Deployment & Optimization
-- RAG Systems
 - Agent Architecture
 - Model Inference Optimization
 - MCP Integration
+- RAG Systems
 - Local Model Deployment
 
 ### DevOps & CI/CD

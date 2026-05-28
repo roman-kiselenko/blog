@@ -4,12 +4,135 @@
 	<subtitle>Insights from the Daily Life of a Engineer</subtitle>
 	<link href="https://rkiselenko.dev/feed/feed.xml" rel="self"/>
 	<link href="https://rkiselenko.dev/"/>
-	<updated>2026-03-17T00:00:00Z</updated>
+	<updated>2026-05-29T00:00:00Z</updated>
 	<id>https://rkiselenko.dev/</id>
 	<author>
 		<name>Roman Kiselenko</name>
 		<email>roman.kiselenko.dev@gmail.com</email>
 	</author>
+	
+	<entry>
+		<title>The teleskopio MCP Server and llama.cpp</title>
+		<link href="https://rkiselenko.dev/blog/teleskopio-mcp/"/>
+		<updated>2026-05-29T00:00:00Z</updated>
+		<id>https://rkiselenko.dev/blog/teleskopio-mcp/</id>
+		<content type="html">&lt;div class=&quot;message-box&quot;&gt;
+	This post I wrote just by hand, english is not my native language and I&#39;ve not use any LLM to fix or polish text.
+&lt;/div&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.gif 880w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.avif 880w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.webp 880w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/mvkvuiqD2C-880.png&quot; alt=&quot;teleskopio-mcp&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;880&quot; height=&quot;893&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;I&#39;ve a pet project the &lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt;. It&#39;s a kubernetes web UI to overview and manage cluster.
+I started developing my own dashboard a year ago; &lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt; was born after struggling to manage clusters with the terminal.&lt;/p&gt;
+&lt;p&gt;One of the &lt;a href=&quot;https://github.com/teleskopio/teleskopio/issues/15&quot;&gt;planned feature was an MCP&lt;/a&gt; server implementationa. Since I&#39;m a big fun of local models, lurking a lot on the &lt;a href=&quot;https://www.reddit.com/r/LocalLLaMA/&quot;&gt;u/LocalLLaMA&lt;/a&gt; sub.
+I decide to add an &lt;a href=&quot;https://modelcontextprotocol.io/docs/getting-started/intro&quot;&gt;modelcontextprotocol&lt;/a&gt; server to the teleskopio.&lt;/p&gt;
+&lt;p&gt;The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.&lt;/p&gt;
+&lt;p&gt;First MVP integration is 3 tools, 1 prompt and completion accourding to the &lt;a href=&quot;https://modelcontextprotocol.io/docs/getting-started/intro&quot;&gt;modelcontextprotocol&lt;/a&gt;.
+As an MCP client I&#39;m going to use &lt;a href=&quot;https://github.com/ggml-org/llama.cpp&quot;&gt;llama.cpp&lt;/a&gt; becuase it has a very robust MCP and tools integration.&lt;/p&gt;
+&lt;p&gt;Here is the step by step guide (my host is MacOS):&lt;/p&gt;
+&lt;ol start=&quot;0&quot;&gt;
+&lt;li&gt;Use &lt;a href=&quot;https://github.com/abiosoft/colima&quot;&gt;colima&lt;/a&gt; as docker engine.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;colima status
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; colima is running using macOS Virtualization.Framework
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; arch: aarch64
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; runtime: &lt;span class=&quot;token function&quot;&gt;docker&lt;/span&gt;
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; mountType: virtiofs
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;docker&lt;/span&gt; socket: unix:///Users/roman/.colima/default/docker.sock
+INFO&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;0000&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; containerd socket: unix:///Users/roman/.colima/default/containerd.sock&lt;/code&gt;&lt;/pre&gt;
+&lt;ol&gt;
+&lt;li&gt;Spin up a &lt;a href=&quot;https://kind.sigs.k8s.io&quot;&gt;kind&lt;/a&gt; cluster.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;&lt;span class=&quot;token function&quot;&gt;docker&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;ps&lt;/span&gt;
+CONTAINER ID   IMAGE                  COMMAND                  CREATED      STATUS       PORTS                       NAMES
+74a462cbf7de   kindest/node:v1.35.0   &lt;span class=&quot;token string&quot;&gt;&quot;/usr/local/bin/entr…&quot;&lt;/span&gt;   &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt; days ago   Up &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; hours   &lt;span class=&quot;token number&quot;&gt;127.0&lt;/span&gt;.0.1:50025-&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;6443&lt;/span&gt;/tcp   kind-control-plane&lt;/code&gt;&lt;/pre&gt;
+&lt;ol start=&quot;2&quot;&gt;
+&lt;li&gt;Run teleskopio with &lt;code&gt;mcp.enabled = true&lt;/code&gt;, (the way teleskopio &lt;a href=&quot;https://teleskopio.github.io/install/#install&quot;&gt;is deployed doesnt matter&lt;/a&gt;, it can be in the docker, on the host, by helm).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; config.yaml &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; yq .mcp
+enabled: &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;ol start=&quot;3&quot;&gt;
+&lt;li&gt;Spin up llama.cpp server with &lt;code&gt;Qwen3.6-27B-GGUF-8bit&lt;/code&gt; model and add teleskopio mcp server (use llama-mcp-proxy enabled).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;llama-server &lt;span class=&quot;token parameter variable&quot;&gt;--port&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;8083&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  --webui-mcp-proxy &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;-hf&lt;/span&gt; unsloth/Qwen3.6-27B-GGUF-8bit:UD-Q8_K_XL &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;640000&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;-ctk&lt;/span&gt; q4_0 &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;-ctv&lt;/span&gt; q4_0 &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;--alias&lt;/span&gt; Qwen3.6-27B-GGUF-8bit &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  --cache-reuse &lt;span class=&quot;token number&quot;&gt;32&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;-ngl&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;35&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;&#92;&lt;/span&gt;
+  &lt;span class=&quot;token parameter variable&quot;&gt;--reasoning&lt;/span&gt; on&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/QnLH9DYpb0-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/QnLH9DYpb0-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/QnLH9DYpb0-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/QnLH9DYpb0-900.png&quot; alt=&quot;llama.cpp add mcp server&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;569&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;As an example of LLM usage I&#39;m going to deploy 5 pods in the different namespaces. 1 pending with wrong image name (busyboxx), 2 failed (exit 1), 2 nginx containers without any problem.&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/kNb-6zAPxw-1100.gif 1100w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/kNb-6zAPxw-1100.avif 1100w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/kNb-6zAPxw-1100.webp 1100w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/kNb-6zAPxw-1100.png&quot; alt=&quot;kubernetes pods&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1100&quot; height=&quot;349&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;The teleskopio MCP contains a bunch of tools to fetch resources from cluster and one prompt to diagnose pods problems.&lt;/p&gt;
+&lt;pre class=&quot;language-md&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-md&quot;&gt;You&#39;re an SRE engineer. Follow these steps to investigate pods issues and generate report for the user:
+
+&lt;span class=&quot;token list punctuation&quot;&gt;1.&lt;/span&gt; Fetch pods resource from the [THE SERVER ENDPOINT] server by using api_resources tool with kind Pod
+&lt;span class=&quot;token list punctuation&quot;&gt;2.&lt;/span&gt; Use list_resources tool to fetch Pod resources, use empty namespace argument to fetch pods across all namespaces, use field_selector status.phase!=Running to list pods in not Running state, request short resources overview.
+&lt;span class=&quot;token list punctuation&quot;&gt;3.&lt;/span&gt; If any pods returned look for CrashLoopBackOff, ImagePullBackOff, OOMKilled, FailedScheduling, Unhealthy, BackOff pod phase by requesting those full resources to analize.
+
+CrashLoopBackOff: Looking logs for application errors
+ImagePullBackOff: Wrong image name/tag or pull secrets
+Pending: Insufficient resources, node selector mismatch, PVC not bound
+OOMKilled: Container memory limit too low for workload or workload has resource leaking.
+FailedMount: Missing ConfigMap, Secret, or PV
+
+Return short report for the user.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;By typing &lt;code&gt;/po...&lt;/code&gt; the MCP prompt appears and arguments autocompletion fired (our servers from teleskopio).&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/MG82vhdLtG-1100.gif 1100w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/MG82vhdLtG-1100.avif 1100w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/MG82vhdLtG-1100.webp 1100w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/MG82vhdLtG-1100.png&quot; alt=&quot;pods diagnose prompt&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;1100&quot; height=&quot;573&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;After submitting and waiting a for a while (5 mins) our LLM perform 4 turns and 3 tool calls and spend 10% of the context (64000)&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/D4dpA4dAmy-982.gif 982w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/D4dpA4dAmy-982.avif 982w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/D4dpA4dAmy-982.webp 982w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/D4dpA4dAmy-982.png&quot; alt=&quot;llm stats&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;982&quot; height=&quot;90&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;Here is the report:&lt;/p&gt;
+&lt;pre class=&quot;language-md&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-md&quot;&gt;&lt;span class=&quot;token title important&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;#&lt;/span&gt; 🛠️ Pod Diagnosis Report&lt;/span&gt;
+
+&lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Cluster:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`https://127.0.0.1:50025`&lt;/span&gt;
+&lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Scan Scope:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; All namespaces, non-Running pods
+&lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Findings:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; 3 problematic pods detected
+
+&lt;span class=&quot;token hr punctuation&quot;&gt;---&lt;/span&gt;
+
+&lt;span class=&quot;token title important&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;###&lt;/span&gt; 🔴 1. `bad-image-pod-example`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Namespace:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`default`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Phase:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Pending`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Issue:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`ImagePullBackOff`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Details:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Kubelet failed to pull image &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`busyboxx:latest`&lt;/span&gt;. Error: &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`pull access denied, repository does not exist or may require authorization`&lt;/span&gt;.
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Root Cause:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Typo in image name (&lt;span class=&quot;token code-snippet code keyword&quot;&gt;`busyboxx`&lt;/span&gt; instead of &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`busybox`&lt;/span&gt;) or missing/incorrect &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`imagePullSecrets`&lt;/span&gt;.
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Recommendation:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Correct the image name/tag in the pod/deployment spec. If using a private registry, verify attached pull secrets.
+
+&lt;span class=&quot;token title important&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;###&lt;/span&gt; 🟠 2. `failed-command-example`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Namespace:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`default`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Phase:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Failed`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Issue:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Container terminated with &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Exit Code 1`&lt;/span&gt; (&lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Error`&lt;/span&gt;)
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Details:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Pod command is explicitly set to &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`/bin/sh -c exit 1`&lt;/span&gt;, causing immediate failure. &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`restartPolicy: Never`&lt;/span&gt; prevents retries.
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Recommendation:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; This is an application/command configuration error, not a cluster issue. Review and correct the container&#39;s &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`command`&lt;/span&gt; or &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`args`&lt;/span&gt;.
+
+&lt;span class=&quot;token title important&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;###&lt;/span&gt; 🟠 3. `another-example`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Namespace:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`kube-system`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Phase:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Failed`&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Issue:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Container terminated with &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Exit Code 1`&lt;/span&gt; (&lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Error`&lt;/span&gt;)
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Details:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Identical to above; runs &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`/bin/sh -c exit 1`&lt;/span&gt; and fails immediately.
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Recommendation:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Verify the container entrypoint/command. Ensure the workload doesn&#39;t exit prematurely on startup.
+
+&lt;span class=&quot;token hr punctuation&quot;&gt;---&lt;/span&gt;
+
+&lt;span class=&quot;token title important&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;###&lt;/span&gt; 📊 Summary&lt;/span&gt;
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;ImagePullBackOff:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; 1 pod (invalid image name)
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Failed/Exit Error:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; 2 pods (explicit &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`exit 1`&lt;/span&gt; command)
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;No detections for:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`CrashLoopBackOff`&lt;/span&gt;, &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`OOMKilled`&lt;/span&gt;, &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`FailedScheduling`&lt;/span&gt;, &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Unhealthy`&lt;/span&gt;, or &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`BackOff`&lt;/span&gt; in this scan.
+&lt;span class=&quot;token list punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token bold&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token content&quot;&gt;Action Required:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;**&lt;/span&gt;&lt;/span&gt; Fix image name for &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`bad-image-pod-example`&lt;/span&gt; and review container commands for the two &lt;span class=&quot;token code-snippet code keyword&quot;&gt;`Failed`&lt;/span&gt; pods.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;conclusion&quot; tabindex=&quot;-1&quot;&gt;Conclusion &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/teleskopio-mcp/#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;TBH I&#39;m impressed, right now the MCP protocol (&lt;small&gt;&lt;a href=&quot;https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/&quot;&gt;it&#39;s still doubthfull does we need this protocol?&lt;/a&gt;&lt;/small&gt;) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it&#39;s strong enough to use it in everyday job. 🤔&lt;/p&gt;
+&lt;h3 id=&quot;credits&quot; tabindex=&quot;-1&quot;&gt;Credits &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/teleskopio-mcp/#credits&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/ggml-org/llama.cpp/pull/18655&quot;&gt;llama.cpp MCP support&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://github.com/mark3labs/mcp-go&quot;&gt;mcp-go&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;li&gt;&lt;small&gt;&lt;a href=&quot;https://teleskopio.github.io&quot;&gt;teleskopio&lt;/a&gt;&lt;/small&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Happy coding!&lt;/p&gt;
+</content>
+	</entry>
 	
 	<entry>
 		<title>Build the RAG with Golang and Local LLM</title>
