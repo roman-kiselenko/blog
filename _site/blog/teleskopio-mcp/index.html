@@ -618,7 +618,7 @@ I decide to add an <a href="https://modelcontextprotocol.io/docs/getting-started
 <p>The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.</p>
 <p>First MVP integration is 3 tools, 1 prompt and completion accourding to the <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a>.
 As an MCP client I'm going to use <a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> because it has a very robust MCP and tools integration.</p>
-<p>Lets start (my host is MacOS):</p>
+<p>Lets start (my host is MacOS btw):</p>
 <p>Use <a href="https://github.com/abiosoft/colima">colima</a> as docker engine.</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh">colima status
 INFO<span class="token punctuation">[</span>0000<span class="token punctuation">]</span> colima is running using macOS Virtualization.Framework
@@ -634,9 +634,7 @@ CONTAINER ID   IMAGE                  COMMAND                  CREATED      STAT
 <p>Run teleskopio with <code>mcp.enabled = true</code>, (the way teleskopio <a href="https://teleskopio.github.io/install/#install">is deployed doesnt matter</a>, it can be in the docker, on the host, by helm).</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh"><span class="token function">cat</span> config.yaml <span class="token operator">|</span> yq .mcp
 enabled: <span class="token boolean">true</span></code></pre>
-<ol start="3">
-<li>Spin up llama.cpp server with <code>Qwen3.6-27B-GGUF-8bit</code> model and add teleskopio mcp server (use llama-mcp-proxy enabled).</li>
-</ol>
+<p>Spin up llama.cpp server with <code>Qwen3.6-27B-GGUF-8bit</code> model and add teleskopio mcp server (use llama-mcp-proxy enabled).</p>
 <pre class="language-sh" tabindex="0"><code class="language-sh">llama-server <span class="token parameter variable">--port</span> <span class="token number">8083</span> <span class="token punctuation">\</span>
   --webui-mcp-proxy <span class="token punctuation">\</span>
   <span class="token parameter variable">-hf</span> unsloth/Qwen3.6-27B-GGUF-8bit:UD-Q8_K_XL <span class="token punctuation">\</span>
@@ -678,6 +676,7 @@ Return short report for the user.</code></pre>
 <span class="token hr punctuation">---</span>
 
 <span class="token title important"><span class="token punctuation">###</span> 🔴 1. `bad-image-pod-example`</span>
+
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Namespace:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`default`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Phase:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`Pending`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Issue:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`ImagePullBackOff`</span>
@@ -686,6 +685,7 @@ Return short report for the user.</code></pre>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Recommendation:</span><span class="token punctuation">**</span></span> Correct the image name/tag in the pod/deployment spec. If using a private registry, verify attached pull secrets.
 
 <span class="token title important"><span class="token punctuation">###</span> 🟠 2. `failed-command-example`</span>
+
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Namespace:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`default`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Phase:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`Failed`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Issue:</span><span class="token punctuation">**</span></span> Container terminated with <span class="token code-snippet code keyword">`Exit Code 1`</span> (<span class="token code-snippet code keyword">`Error`</span>)
@@ -693,6 +693,7 @@ Return short report for the user.</code></pre>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Recommendation:</span><span class="token punctuation">**</span></span> This is an application/command configuration error, not a cluster issue. Review and correct the container's <span class="token code-snippet code keyword">`command`</span> or <span class="token code-snippet code keyword">`args`</span>.
 
 <span class="token title important"><span class="token punctuation">###</span> 🟠 3. `another-example`</span>
+
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Namespace:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`kube-system`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Phase:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`Failed`</span>
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Issue:</span><span class="token punctuation">**</span></span> Container terminated with <span class="token code-snippet code keyword">`Exit Code 1`</span> (<span class="token code-snippet code keyword">`Error`</span>)
@@ -702,14 +703,13 @@ Return short report for the user.</code></pre>
 <span class="token hr punctuation">---</span>
 
 <span class="token title important"><span class="token punctuation">###</span> 📊 Summary</span>
+
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">ImagePullBackOff:</span><span class="token punctuation">**</span></span> 1 pod (invalid image name)
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Failed/Exit Error:</span><span class="token punctuation">**</span></span> 2 pods (explicit <span class="token code-snippet code keyword">`exit 1`</span> command)
 <span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">No detections for:</span><span class="token punctuation">**</span></span> <span class="token code-snippet code keyword">`CrashLoopBackOff`</span>, <span class="token code-snippet code keyword">`OOMKilled`</span>, <span class="token code-snippet code keyword">`FailedScheduling`</span>, <span class="token code-snippet code keyword">`Unhealthy`</span>, or <span class="token code-snippet code keyword">`BackOff`</span> in this scan.
-<span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Action Required:</span><span class="token punctuation">**</span></span> Fix image name for <span class="token code-snippet code keyword">`bad-image-pod-example`</span> and review container commands for the two <span class="token code-snippet code keyword">`Failed`</span> pods.
-</code></pre>
+<span class="token list punctuation">-</span> <span class="token bold"><span class="token punctuation">**</span><span class="token content">Action Required:</span><span class="token punctuation">**</span></span> Fix image name for <span class="token code-snippet code keyword">`bad-image-pod-example`</span> and review container commands for the two <span class="token code-snippet code keyword">`Failed`</span> pods.</code></pre>
 <h3 id="conclusion" tabindex="-1">Conclusion <a class="header-anchor" href="#conclusion">#</a></h3>
-<p>TBH I'm impressed, right now the MCP protocol (<small><a href="https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/">it's still doubthfull does we need this protocol?</a></small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. 🤔
-The MCP server is not merged yet and need a bunch of improvments but I think I'll release it soon.</p>
+<p>TBH I'm impressed, right now the MCP protocol (<small><a href="https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/">it's still doubthfull does we need this protocol?</a></small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. 🤔</p>
 <h3 id="credits" tabindex="-1">Credits <a class="header-anchor" href="#credits">#</a></h3>
 <ul>
 <li><small><a href="https://github.com/ggml-org/llama.cpp/pull/18655">llama.cpp MCP support</a></small></li>

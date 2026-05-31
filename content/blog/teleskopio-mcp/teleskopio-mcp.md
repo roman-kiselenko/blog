@@ -18,7 +18,6 @@ tags:
 
 {% image "./teleskopio+mcp.png", "teleskopio-mcp", [900] %}
 
-
 I've a pet project the [teleskopio](https://teleskopio.github.io). It's a kubernetes web UI to overview and manage cluster.
 I started developing my own dashboard a year ago; [teleskopio](https://teleskopio.github.io) was born after struggling to manage clusters with the terminal.
 
@@ -30,7 +29,7 @@ The teleskopio build around Kubernetes watchers and Dynamic resources, hence the
 First MVP integration is 3 tools, 1 prompt and completion accourding to the [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro).
 As an MCP client I'm going to use [llama.cpp](https://github.com/ggml-org/llama.cpp) because it has a very robust MCP and tools integration.
 
-Lets start (my host is MacOS):
+Lets start (my host is MacOS btw):
 
 Use [colima](https://github.com/abiosoft/colima) as docker engine.
 
@@ -59,7 +58,7 @@ cat config.yaml | yq .mcp
 enabled: true
 ```
 
-3. Spin up llama.cpp server with `Qwen3.6-27B-GGUF-8bit` model and add teleskopio mcp server (use llama-mcp-proxy enabled).
+Spin up llama.cpp server with `Qwen3.6-27B-GGUF-8bit` model and add teleskopio mcp server (use llama-mcp-proxy enabled).
 
 ```sh
 llama-server --port 8083 \
@@ -118,6 +117,7 @@ Here is the report:
 ---
 
 ### 🔴 1. `bad-image-pod-example`
+
 - **Namespace:** `default`
 - **Phase:** `Pending`
 - **Issue:** `ImagePullBackOff`
@@ -126,6 +126,7 @@ Here is the report:
 - **Recommendation:** Correct the image name/tag in the pod/deployment spec. If using a private registry, verify attached pull secrets.
 
 ### 🟠 2. `failed-command-example`
+
 - **Namespace:** `default`
 - **Phase:** `Failed`
 - **Issue:** Container terminated with `Exit Code 1` (`Error`)
@@ -133,6 +134,7 @@ Here is the report:
 - **Recommendation:** This is an application/command configuration error, not a cluster issue. Review and correct the container's `command` or `args`.
 
 ### 🟠 3. `another-example`
+
 - **Namespace:** `kube-system`
 - **Phase:** `Failed`
 - **Issue:** Container terminated with `Exit Code 1` (`Error`)
@@ -142,17 +144,16 @@ Here is the report:
 ---
 
 ### 📊 Summary
+
 - **ImagePullBackOff:** 1 pod (invalid image name)
 - **Failed/Exit Error:** 2 pods (explicit `exit 1` command)
 - **No detections for:** `CrashLoopBackOff`, `OOMKilled`, `FailedScheduling`, `Unhealthy`, or `BackOff` in this scan.
 - **Action Required:** Fix image name for `bad-image-pod-example` and review container commands for the two `Failed` pods.
-
 ```
 
 ### Conclusion
 
 TBH I'm impressed, right now the MCP protocol (<small>[it's still doubthfull does we need this protocol?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/)</small>) is pretty robust to build wonderfull things. The teleskopio MCP server are harmless and able to perform only simple tasks, but it's strong enough to use it in everyday job. :thinking:
-The MCP server is not merged yet and need a bunch of improvments but I think I'll release it soon.
 
 ### Credits
 
