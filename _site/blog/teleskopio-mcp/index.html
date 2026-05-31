@@ -616,7 +616,7 @@ I started developing my own dashboard a year ago; <a href="https://teleskopio.gi
 <p>One of the <a href="https://github.com/teleskopio/teleskopio/issues/15">planned feature was an MCP</a> server implementation. Since I'm a big fun of local models, lurking a lot on the <a href="https://www.reddit.com/r/LocalLLaMA/">u/LocalLLaMA</a> sub.
 I decide to add an <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a> server to the teleskopio by using llama.cpp and local model.</p>
 <p>The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.</p>
-<p>First MVP integration is 3 tools, 1 prompt and completion accourding to the <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a>.
+<p>There are 3 tools (<code>clusters</code>, <code>api_resources</code>, <code>get_resources</code>), 2 prompts (<code>pods_diagnosis</code>, <code>nodes_diagnosis</code>) following the <a href="https://modelcontextprotocol.io/docs/getting-started/intro">modelcontextprotocol</a>.
 As an MCP client I'm going to use <a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> because it has a very robust MCP and tools integration.</p>
 <p>Lets start (my host is MacOS btw):</p>
 <p>Use <a href="https://github.com/abiosoft/colima">colima</a> as docker engine.</p>

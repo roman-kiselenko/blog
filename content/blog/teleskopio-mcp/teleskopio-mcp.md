@@ -26,7 +26,7 @@ I decide to add an [modelcontextprotocol](https://modelcontextprotocol.io/docs/g
 
 The teleskopio build around Kubernetes watchers and Dynamic resources, hence there is no hardcoded schema and required kubernetes version to work with, all resources loaded at runtime and updated by events subscriptions. The same api are under the hood of MCP integration.
 
-First MVP integration is 3 tools, 1 prompt and completion accourding to the [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro).
+There are 3 tools (`clusters`, `api_resources`, `get_resources`), 2 prompts (`pods_diagnosis`, `nodes_diagnosis`) following the [modelcontextprotocol](https://modelcontextprotocol.io/docs/getting-started/intro).
 As an MCP client I'm going to use [llama.cpp](https://github.com/ggml-org/llama.cpp) because it has a very robust MCP and tools integration.
 
 Lets start (my host is MacOS btw):
