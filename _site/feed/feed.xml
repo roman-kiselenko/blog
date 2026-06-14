@@ -81,7 +81,7 @@ rm -f /lib/systemd/system/anaconda.target.wants/*;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;This &lt;code&gt;Dockerfile&lt;/code&gt; is partially based on an examples from &lt;a href=&quot;https://github.com/apple/container/blob/6508acea81c193580fe07b9a61170caa50ba9443/examples/container-machine-vscode/Dockerfile&quot;&gt;apple repository&lt;/a&gt; and &lt;a href=&quot;https://github.com/sokoloowski/container-machine-images&quot;&gt;sokoloowski container images&lt;/a&gt;.&lt;/p&gt;
 &lt;div class=&quot;message-box&quot;&gt;
-&lt;p&gt;We need an image with init system which is used by container machine to run the container as a VM.&lt;/p&gt;
+&lt;p&gt;We need an image with init system which is used by container machine to run the container as a vm.&lt;/p&gt;
 &lt;/div&gt;
 &lt;p&gt;Build the container:&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container build &lt;span class=&quot;token parameter variable&quot;&gt;-t&lt;/span&gt; local/ubuntu &lt;span class=&quot;token parameter variable&quot;&gt;-f&lt;/span&gt; Dockerfile
@@ -148,18 +148,21 @@ pi &lt;span class=&quot;token parameter variable&quot;&gt;--version&lt;/span&gt;
 &lt;span class=&quot;token function&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.ssh
 &lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; /etc/ssh/pub-key.pub&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.ssh/authorized_keys
 &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; systemctl start sshd.service&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Since the &lt;code&gt;/Users/...&lt;/code&gt; folder from the host will be mounted to the VM we can use scripts from the host and setup our vm after boot.&lt;/p&gt;
+&lt;p&gt;Since the &lt;code&gt;/Users/...&lt;/code&gt; folder from the host will be mounted to the vm we can use scripts from the host and setup our vm after boot.&lt;/p&gt;
 &lt;p&gt;This script will be placed to the directory automatically mounted to the machine.&lt;/p&gt;
 &lt;p&gt;Run script from within machine:&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine run &lt;span class=&quot;token parameter variable&quot;&gt;-n&lt;/span&gt; ubuntu
 &lt;span class=&quot;token comment&quot;&gt;# cd to directory with script ./setup.sh&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;# output omitted&lt;/span&gt;
 &lt;span class=&quot;token builtin class-name&quot;&gt;exit&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Next we&#39;re going to setup dns in order to access a host service (macOS &lt;code&gt;localhost&lt;/code&gt;) from within our vm and reach the vm from host machine.&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# To access guest from host&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;# by ssh for e.g. ssh root@ubuntu.machine&lt;/span&gt;
 &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; container system dns create machine
 &lt;span class=&quot;token comment&quot;&gt;# To access host from the guest&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;# to react host application&lt;/span&gt;
 &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; container system dns create host.container.internal &lt;span class=&quot;token parameter variable&quot;&gt;--localhost&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;203.0&lt;/span&gt;.113.113&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now lets use Zed to connect to our vm.&lt;/p&gt;
+&lt;p&gt;Now lets use &lt;code&gt;Zed&lt;/code&gt; to connect to our vm.&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;~/.ssh/config &lt;/b&gt;The host ssh config&lt;/div&gt;
 &lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;Host ubuntu.machine
    HostName ubuntu.machine
@@ -168,8 +171,8 @@ pi &lt;span class=&quot;token parameter variable&quot;&gt;--version&lt;/span&gt;
    &lt;span class=&quot;token comment&quot;&gt;# PreferredAuthentications password&lt;/span&gt;
    &lt;span class=&quot;token comment&quot;&gt;# PubkeyAuthentication no&lt;/span&gt;
    UserKnownHostsFile /dev/null&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;After this change in the  host ssh config we can choose our vm in the Zed editor &lt;code&gt;Remote projects&lt;/code&gt; feature.&lt;/p&gt;
-&lt;p&gt;I&#39;m using &lt;code&gt;oMLX&lt;/code&gt; and local models with open weights so my &lt;code&gt;pi&lt;/code&gt; configuration is pointed to &lt;code&gt;host.container.internal&lt;/code&gt; and from the &lt;code&gt;pi&lt;/code&gt; side everything works smooth. 🆒&lt;/p&gt;
+&lt;p&gt;After this change in the host ssh config we can choose our vm in the &lt;code&gt;Zed&lt;/code&gt; editor &lt;code&gt;Remote projects&lt;/code&gt; feature.&lt;/p&gt;
+&lt;p&gt;I&#39;m using &lt;code&gt;oMLX&lt;/code&gt; and local models so my &lt;code&gt;pi&lt;/code&gt; configuration is pointed to &lt;code&gt;host.container.internal&lt;/code&gt; and from the &lt;code&gt;pi&lt;/code&gt; side everything works smooth. 🆒&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;~/.pi/agent/models.json &lt;/b&gt;The pi config file&lt;/div&gt;
 &lt;pre class=&quot;language-json&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-json&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
   &lt;span class=&quot;token property&quot;&gt;&quot;providers&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
@@ -192,21 +195,22 @@ pi &lt;span class=&quot;token parameter variable&quot;&gt;--version&lt;/span&gt;
 ...&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The &lt;code&gt;pi&lt;/code&gt; data directory is on the host and guest vm &lt;code&gt;pi&lt;/code&gt; instance reads &lt;code&gt;$PI_CODING_AGENT_DIR&lt;/code&gt; variable.&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt; &lt;/b&gt;The bashrc on the guest&lt;/div&gt;
-&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;PI_CODING_AGENT_DIR&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/Users/my-user/.pi/agent&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# /Users/my-user directory is mounted to the guest vm&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;PI_CODING_AGENT_DIR&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/Users/my-user/.pi/agent&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Lets login to the guest vm and run &lt;code&gt;pi&lt;/code&gt; command.&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine run &lt;span class=&quot;token parameter variable&quot;&gt;-n&lt;/span&gt; ubuntu
 pi&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.png&quot; alt=&quot;agent screentshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;783&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.png&quot; alt=&quot;agent screentshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;783&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;h3 id=&quot;the-pros&quot; tabindex=&quot;-1&quot;&gt;the pros &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-acm/#the-pros&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Overall UX is as cool as the &lt;a href=&quot;https://lima-vm.io/docs/installation/&quot;&gt;&lt;code&gt;lima&lt;/code&gt;&lt;/a&gt;, you just write a bunch of commands and everything seems to work.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Overall UX is as cool as the &lt;a href=&quot;https://lima-vm.io/docs/installation/&quot;&gt;&lt;code&gt;lima&lt;/code&gt;&lt;/a&gt;, you just write a bunch of commands and everything seems to works.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Pretty fast on the large codebases.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Reproducable because of &lt;code&gt;docker&lt;/code&gt;-like expirience.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&quot;and-cons&quot; tabindex=&quot;-1&quot;&gt;and cons &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-acm/#and-cons&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Cumbersome stuff with dns&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Cant run provision script since user created at the first boot.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Cumbersome stuff with dns.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Can&#39;t run provision scripts since user created at the first boot.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Host mounts all &lt;code&gt;/Users/my-user&lt;/code&gt; folder, you can only set &lt;code&gt;rw,ro,none&lt;/code&gt; mount options, that a sad thing.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Check out my other howtos:&lt;/p&gt;

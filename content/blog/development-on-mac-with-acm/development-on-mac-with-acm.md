@@ -86,7 +86,7 @@ CMD [ "/usr/sbin/init" ]
 This `Dockerfile` is partially based on an examples from [apple repository](https://github.com/apple/container/blob/6508acea81c193580fe07b9a61170caa50ba9443/examples/container-machine-vscode/Dockerfile) and [sokoloowski container images](https://github.com/sokoloowski/container-machine-images).
 
 <div class="message-box">
-<p>We need an image with init system which is used by container machine to run the container as a VM.</p>
+<p>We need an image with init system which is used by container machine to run the container as a vm.</p>
 </div>
 
 Build the container:
@@ -166,7 +166,7 @@ echo $(cat /etc/ssh/pub-key.pub) >> $HOME/.ssh/authorized_keys
 sudo systemctl start sshd.service
 ```
 
-Since the `/Users/...` folder from the host will be mounted to the VM we can use scripts from the host and setup our vm after boot.
+Since the `/Users/...` folder from the host will be mounted to the vm we can use scripts from the host and setup our vm after boot.
 
 This script will be placed to the directory automatically mounted to the machine.
 
@@ -175,6 +175,7 @@ Run script from within machine:
 ```bash
 container machine run -n ubuntu
 # cd to directory with script ./setup.sh
+# output omitted
 exit
 ```
 
@@ -182,12 +183,14 @@ Next we're going to setup dns in order to access a host service (macOS `localhos
 
 ```bash
 # To access guest from host
+# by ssh for e.g. ssh root@ubuntu.machine
 sudo container system dns create machine
 # To access host from the guest
+# to react host application
 sudo container system dns create host.container.internal --localhost 203.0.113.113
 ```
 
-Now lets use Zed to connect to our vm.
+Now lets use `Zed` to connect to our vm.
 
 {% codetitle "The host ssh config", "~/.ssh/config" %}
 
@@ -201,10 +204,9 @@ Host ubuntu.machine
    UserKnownHostsFile /dev/null
 ```
 
-After this change in the  host ssh config we can choose our vm in the Zed editor `Remote projects` feature.
+After this change in the host ssh config we can choose our vm in the `Zed` editor `Remote projects` feature.
 
-I'm using `oMLX` and local models with open weights so my `pi` configuration is pointed to `host.container.internal` and from the `pi` side everything works smooth. :cool:
-
+I'm using `oMLX` and local models so my `pi` configuration is pointed to `host.container.internal` and from the `pi` side everything works smooth. :cool:
 
 {% codetitle "The pi config file", "~/.pi/agent/models.json" %}
 
@@ -237,9 +239,9 @@ The `pi` data directory is on the host and guest vm `pi` instance reads `$PI_COD
 
 
 ```bash
+# /Users/my-user directory is mounted to the guest vm
 export PI_CODING_AGENT_DIR="/Users/my-user/.pi/agent"
 ```
-
 
 Lets login to the guest vm and run `pi` command.
 
@@ -250,17 +252,16 @@ pi
 
 {% image "./pi.png", "agent screentshot", [900] %}
 
-
 ### the pros
 
-- __pros__ - Overall UX is as cool as the [`lima`](https://lima-vm.io/docs/installation/), you just write a bunch of commands and everything seems to work.
+- __pros__ - Overall UX is as cool as the [`lima`](https://lima-vm.io/docs/installation/), you just write a bunch of commands and everything seems to works.
 - __pros__ - Pretty fast on the large codebases.
 - __pros__ - Reproducable because of `docker`-like expirience.
 
 ### and cons
 
-- __cons__ - Cumbersome stuff with dns
-- __cons__ - Cant run provision script since user created at the first boot.
+- __cons__ - Cumbersome stuff with dns.
+- __cons__ - Can't run provision scripts since user created at the first boot.
 - __cons__ - Host mounts all `/Users/my-user` folder, you can only set `rw,ro,none` mount options, that a sad thing.
 
 Check out my other howtos:

@@ -669,7 +669,7 @@ rm -f /lib/systemd/system/anaconda.target.wants/*;</span>
 </code></pre>
 <p>This <code>Dockerfile</code> is partially based on an examples from <a href="https://github.com/apple/container/blob/6508acea81c193580fe07b9a61170caa50ba9443/examples/container-machine-vscode/Dockerfile">apple repository</a> and <a href="https://github.com/sokoloowski/container-machine-images">sokoloowski container images</a>.</p>
 <div class="message-box">
-<p>We need an image with init system which is used by container machine to run the container as a VM.</p>
+<p>We need an image with init system which is used by container machine to run the container as a vm.</p>
 </div>
 <p>Build the container:</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash">container build <span class="token parameter variable">-t</span> local/ubuntu <span class="token parameter variable">-f</span> Dockerfile
@@ -736,18 +736,21 @@ pi <span class="token parameter variable">--version</span>
 <span class="token function">mkdir</span> <span class="token parameter variable">-p</span> <span class="token environment constant">$HOME</span>/.ssh
 <span class="token builtin class-name">echo</span> <span class="token variable"><span class="token variable">$(</span><span class="token function">cat</span> /etc/ssh/pub-key.pub<span class="token variable">)</span></span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.ssh/authorized_keys
 <span class="token function">sudo</span> systemctl start sshd.service</code></pre>
-<p>Since the <code>/Users/...</code> folder from the host will be mounted to the VM we can use scripts from the host and setup our vm after boot.</p>
+<p>Since the <code>/Users/...</code> folder from the host will be mounted to the vm we can use scripts from the host and setup our vm after boot.</p>
 <p>This script will be placed to the directory automatically mounted to the machine.</p>
 <p>Run script from within machine:</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash">container machine run <span class="token parameter variable">-n</span> ubuntu
 <span class="token comment"># cd to directory with script ./setup.sh</span>
+<span class="token comment"># output omitted</span>
 <span class="token builtin class-name">exit</span></code></pre>
 <p>Next we're going to setup dns in order to access a host service (macOS <code>localhost</code>) from within our vm and reach the vm from host machine.</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token comment"># To access guest from host</span>
+<span class="token comment"># by ssh for e.g. ssh root@ubuntu.machine</span>
 <span class="token function">sudo</span> container system dns create machine
 <span class="token comment"># To access host from the guest</span>
+<span class="token comment"># to react host application</span>
 <span class="token function">sudo</span> container system dns create host.container.internal <span class="token parameter variable">--localhost</span> <span class="token number">203.0</span>.113.113</code></pre>
-<p>Now lets use Zed to connect to our vm.</p>
+<p>Now lets use <code>Zed</code> to connect to our vm.</p>
 <div class="codetitle codetitle-left"><b>~/.ssh/config </b>The host ssh config</div>
 <pre class="language-yaml" tabindex="0"><code class="language-yaml">Host ubuntu.machine
    HostName ubuntu.machine
@@ -756,8 +759,8 @@ pi <span class="token parameter variable">--version</span>
    <span class="token comment"># PreferredAuthentications password</span>
    <span class="token comment"># PubkeyAuthentication no</span>
    UserKnownHostsFile /dev/null</code></pre>
-<p>After this change in the  host ssh config we can choose our vm in the Zed editor <code>Remote projects</code> feature.</p>
-<p>I'm using <code>oMLX</code> and local models with open weights so my <code>pi</code> configuration is pointed to <code>host.container.internal</code> and from the <code>pi</code> side everything works smooth. 🆒</p>
+<p>After this change in the host ssh config we can choose our vm in the <code>Zed</code> editor <code>Remote projects</code> feature.</p>
+<p>I'm using <code>oMLX</code> and local models so my <code>pi</code> configuration is pointed to <code>host.container.internal</code> and from the <code>pi</code> side everything works smooth. 🆒</p>
 <div class="codetitle codetitle-left"><b>~/.pi/agent/models.json </b>The pi config file</div>
 <pre class="language-json" tabindex="0"><code class="language-json"><span class="token punctuation">{</span>
   <span class="token property">"providers"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
@@ -780,21 +783,22 @@ pi <span class="token parameter variable">--version</span>
 ...</code></pre>
 <p>The <code>pi</code> data directory is on the host and guest vm <code>pi</code> instance reads <code>$PI_CODING_AGENT_DIR</code> variable.</p>
 <div class="codetitle codetitle-left"><b> </b>The bashrc on the guest</div>
-<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">PI_CODING_AGENT_DIR</span><span class="token operator">=</span><span class="token string">"/Users/my-user/.pi/agent"</span></code></pre>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token comment"># /Users/my-user directory is mounted to the guest vm</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">PI_CODING_AGENT_DIR</span><span class="token operator">=</span><span class="token string">"/Users/my-user/.pi/agent"</span></code></pre>
 <p>Lets login to the guest vm and run <code>pi</code> command.</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash">container machine run <span class="token parameter variable">-n</span> ubuntu
 pi</code></pre>
-<p><picture><source type="image/gif" srcset="/img/QOj0efDbiq-900.gif 900w"><source type="image/avif" srcset="/img/QOj0efDbiq-900.avif 900w"><source type="image/webp" srcset="/img/QOj0efDbiq-900.webp 900w"><img src="/img/QOj0efDbiq-900.png" alt="agent screentshot" loading="lazy" decoding="async" width="900" height="783"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/DePyw9Ykpt-900.gif 900w"><source type="image/avif" srcset="/img/DePyw9Ykpt-900.avif 900w"><source type="image/webp" srcset="/img/DePyw9Ykpt-900.webp 900w"><img src="/img/DePyw9Ykpt-900.png" alt="agent screentshot" loading="lazy" decoding="async" width="900" height="783"></picture></p>
 <h3 id="the-pros" tabindex="-1">the pros <a class="header-anchor" href="#the-pros">#</a></h3>
 <ul>
-<li><strong>pros</strong> - Overall UX is as cool as the <a href="https://lima-vm.io/docs/installation/"><code>lima</code></a>, you just write a bunch of commands and everything seems to work.</li>
+<li><strong>pros</strong> - Overall UX is as cool as the <a href="https://lima-vm.io/docs/installation/"><code>lima</code></a>, you just write a bunch of commands and everything seems to works.</li>
 <li><strong>pros</strong> - Pretty fast on the large codebases.</li>
 <li><strong>pros</strong> - Reproducable because of <code>docker</code>-like expirience.</li>
 </ul>
 <h3 id="and-cons" tabindex="-1">and cons <a class="header-anchor" href="#and-cons">#</a></h3>
 <ul>
-<li><strong>cons</strong> - Cumbersome stuff with dns</li>
-<li><strong>cons</strong> - Cant run provision script since user created at the first boot.</li>
+<li><strong>cons</strong> - Cumbersome stuff with dns.</li>
+<li><strong>cons</strong> - Can't run provision scripts since user created at the first boot.</li>
 <li><strong>cons</strong> - Host mounts all <code>/Users/my-user</code> folder, you can only set <code>rw,ro,none</code> mount options, that a sad thing.</li>
 </ul>
 <p>Check out my other howtos:</p>
