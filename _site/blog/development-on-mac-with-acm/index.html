@@ -608,7 +608,7 @@ img[width][height] {
 	<p>Container machines are persistent Linux environments built from OCI images — your home directory is mounted in, the user account matches your host account, and the filesystem survives stop and start. <a href='https://github.com/apple/container/blob/1.0.0/docs/how-to.md#use-container-machines'>ref</a></p>
 </div>
 <p>I like the idea to isolate development stuff from my host machine, all those tools and libraries to fight with, lives in the isolated environment. The last WWDC26 announce Apple's <a href="https://github.com/apple/container/releases/tag/1.0.0">native Container tool for macOS</a>. It's WSL-ish tool to create vm's on macOS.
-I've poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to every dayly driver.</p>
+I've poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to be daily driver.</p>
 <p>This article goes through all pitfalls in order to setup dev machine, some of those ways a crunky and ugly. 😄
 But I've tried my best to overcome it.</p>
 <p>I'm going to setup machine with following requirements:</p>
@@ -788,7 +788,7 @@ pi <span class="token parameter variable">--version</span>
 <p>Lets login to the guest vm and run <code>pi</code> command.</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash">container machine run <span class="token parameter variable">-n</span> ubuntu
 pi</code></pre>
-<p><picture><source type="image/gif" srcset="/img/DePyw9Ykpt-900.gif 900w"><source type="image/avif" srcset="/img/DePyw9Ykpt-900.avif 900w"><source type="image/webp" srcset="/img/DePyw9Ykpt-900.webp 900w"><img src="/img/DePyw9Ykpt-900.png" alt="agent screentshot" loading="lazy" decoding="async" width="900" height="783"></picture></p>
+<p><picture><source type="image/gif" srcset="/img/Q0nc6f31T3-900.gif 900w"><source type="image/avif" srcset="/img/Q0nc6f31T3-900.avif 900w"><source type="image/webp" srcset="/img/Q0nc6f31T3-900.webp 900w"><img src="/img/Q0nc6f31T3-900.png" alt="agent screentshot" loading="lazy" decoding="async" width="900" height="783"></picture></p>
 <h3 id="the-pros" tabindex="-1">the pros <a class="header-anchor" href="#the-pros">#</a></h3>
 <ul>
 <li><strong>pros</strong> - Overall UX is as cool as the <a href="https://lima-vm.io/docs/installation/"><code>lima</code></a>, you just write a bunch of commands and everything seems to works.</li>

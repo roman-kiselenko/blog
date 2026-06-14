@@ -16,7 +16,7 @@ tags:
 </div>
 
 I like the idea to isolate development stuff from my host machine, all those tools and libraries to fight with, lives in the isolated environment. The last WWDC26 announce Apple's [native Container tool for macOS](https://github.com/apple/container/releases/tag/1.0.0). It's WSL-ish tool to create vm's on macOS.
-I've poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to every dayly driver.
+I've poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to be daily driver.
 
 This article goes through all pitfalls in order to setup dev machine, some of those ways a crunky and ugly. :smile:
 But I've tried my best to overcome it.

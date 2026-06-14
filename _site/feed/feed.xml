@@ -20,7 +20,7 @@
 	&lt;p&gt;Container machines are persistent Linux environments built from OCI images — your home directory is mounted in, the user account matches your host account, and the filesystem survives stop and start. &lt;a href=&quot;https://github.com/apple/container/blob/1.0.0/docs/how-to.md#use-container-machines&quot;&gt;ref&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;p&gt;I like the idea to isolate development stuff from my host machine, all those tools and libraries to fight with, lives in the isolated environment. The last WWDC26 announce Apple&#39;s &lt;a href=&quot;https://github.com/apple/container/releases/tag/1.0.0&quot;&gt;native Container tool for macOS&lt;/a&gt;. It&#39;s WSL-ish tool to create vm&#39;s on macOS.
-I&#39;ve poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to every dayly driver.&lt;/p&gt;
+I&#39;ve poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to be daily driver.&lt;/p&gt;
 &lt;p&gt;This article goes through all pitfalls in order to setup dev machine, some of those ways a crunky and ugly. 😄
 But I&#39;ve tried my best to overcome it.&lt;/p&gt;
 &lt;p&gt;I&#39;m going to setup machine with following requirements:&lt;/p&gt;
@@ -200,7 +200,7 @@ pi &lt;span class=&quot;token parameter variable&quot;&gt;--version&lt;/span&gt;
 &lt;p&gt;Lets login to the guest vm and run &lt;code&gt;pi&lt;/code&gt; command.&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine run &lt;span class=&quot;token parameter variable&quot;&gt;-n&lt;/span&gt; ubuntu
 pi&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/DePyw9Ykpt-900.png&quot; alt=&quot;agent screentshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;783&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/Q0nc6f31T3-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/Q0nc6f31T3-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/Q0nc6f31T3-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/Q0nc6f31T3-900.png&quot; alt=&quot;agent screentshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;783&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
 &lt;h3 id=&quot;the-pros&quot; tabindex=&quot;-1&quot;&gt;the pros &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-acm/#the-pros&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Overall UX is as cool as the &lt;a href=&quot;https://lima-vm.io/docs/installation/&quot;&gt;&lt;code&gt;lima&lt;/code&gt;&lt;/a&gt;, you just write a bunch of commands and everything seems to works.&lt;/li&gt;
