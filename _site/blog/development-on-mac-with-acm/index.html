@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Development On Apple Silicon with Apple Container Machine</title>
+		<meta name="author" content="Roman Kiselenko">
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="rkiselenko.dev">
+		<meta name="title" property="og:title" content="Development On Apple Silicon with Apple Container Machine">
+		<meta name="description" property="og:description" content="A concise tutorial detailing the setup of development VMs with Apple Container Machine.">
+		<meta property="og:url" content="https://rkiselenko.dev/blog/development-on-mac-with-acm/">
+		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/pi.png">
+		<meta name="twitter:card" content="summary">
+		<meta name="keywords" content="posts,vm,apple container machine,arm,macbook,apple silicon"/>
+		<meta name="twitter:site" content="@shindu666">
+		<meta name="twitter:image" content="https://rkiselenko.dev/img/pi.png">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet"/>
+		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+		<link rel="manifest" href="/manifest.json"/>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap" rel="stylesheet">
+		<link
+			href="https://unpkg.com/prismjs@1.20.0/themes/prism-okaidia.css"
+			rel="stylesheet"
+		/>
+		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="rkiselenko.dev">
+		<link rel="alternate" href="/feed/feed.json" type="application/json" title="rkiselenko.dev">
+		
+		<style>
+			/*
+ * New diff- syntax
+ */
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+* { box-sizing: border-box; }
+/* Defaults */
+
+:root {
+	--font-family: "Lora", sans-serif;
+	--font-family-heading: "Playfair", sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 400;
+	font-style: normal;
+	--font-family-monospace: "Iosevka Web", monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #333;
+
+	--background-color: #ffffff;
+
+	--card-background-color: #ffffff;
+
+	--color-code-gray-90: #494949;
+	--color-code-gray-30: #dcdcdc;
+
+	--text-color: var(--color-gray-90);
+	--text-color-link: #45a2ea;
+	--text-color-link-active: #5f2b48;
+	--text-color-link-visited: #735063;
+
+	--syntax-tab-size: 2;
+
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
+		word-break: break-all;
+	    border-radius: 2px;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-gray-20: #e0e0e0;
+		--color-gray-50: #C0C0C0;
+		--color-gray-90: #dad8d8;
+
+
+		--color-code-gray-90: #676767;
+		--color-code-gray-30: #dcdcdc;
+
+		--card-background-color: #364253;
+
+		/* --text-color is assigned to --color-gray-_ above */
+		--text-color-link: #a5a5a5;
+		--text-color-link-active: #818181;
+		--text-color-link-visited: #72a697;
+
+		--background-color: #15202b;
+	}
+
+	.github, .linkedin, .stackoverflow, .rss {
+		fill: white;
+	}
+
+	code:not(pre code) {
+		background-color: var(--color-code-gray-90);
+		color: var(--color-code-gray-30);
+		word-break: break-all;
+		border-radius: 2px;
+	}
+}
+
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+
+b {
+	font-family: var(--font-family);
+	font-weight: 600;
+}
+
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 50em;
+	min-width: 20em;
+}
+
+blockquote {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	padding-left: 15px;
+	border-left: 5px solid var(--text-color-link);
+	--font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+h1,h2,h3,h4 {
+	margin-bottom: 0;
+	font-family: var(--font-family-heading);
+	font-weight: 600;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p,li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+	font-weight: medium;
+	text-decoration: none;
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+
+p > a:after {
+     content: " " url(/img/anchor.svg);
+}
+
+main {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.links-nextprev {
+	list-style: none;
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+
+table {
+	margin: 1em 0;
+}
+table td,
+table th {
+	padding-right: 1em;
+}
+
+pre[class*="language-"] {
+	padding: 0.5em;
+	line-height: 1.2; /* 22px /16 */
+}
+pre,
+code {
+	font-family: var(--font-family-monospace);
+    /* border-radius: 5px; */
+	white-space: nowrap;
+	padding: 2px 2px 2px 2px;
+    font-size: 0.9em;
+}
+code[class*="language-"] {
+	padding: 0px;
+}
+
+pre,
+code[class*="language-"] {
+	font-family: var(--font-family-monospace);
+	line-height: 1; /* 22px /16 */
+    font-size: 1em;
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.225; /* 22px /16 */
+	font-family: var(--font-family-monospace);
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+}
+
+/* code {
+	background-color: var(--color-gray-20);
+	word-break: break-all;
+} */
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 0.7em;
+	white-space: nowrap;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+
+.nav-item a[href]:hover {
+    text-decoration: underline;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* text-transform: capitalize; */
+	font-style: italic;
+}
+
+a[href]:visited.post-tag {
+	color: var(--text-color-link-visited);
+}
+
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+}
+.post-metadata time {
+	margin-right: 1em;
+	font-size: 0.85em;
+}
+
+/* Direct Links / Markdown Headers */
+.header-anchor {
+	text-decoration: none;
+	font-style: normal;
+	font-size: 1em;
+	margin-left: .1em;
+}
+a[href].header-anchor,
+a[href].header-anchor:visited {
+	color: transparent;
+}
+a[href].header-anchor:focus,
+a[href].header-anchor:hover {
+	text-decoration: underline;
+}
+a[href].header-anchor:focus,
+:hover > a[href].header-anchor {
+	color: #aaa;
+}
+
+h2 + .header-anchor {
+	font-size: 1.5em;
+}
+
+.ava img {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+  max-width: 20%;
+}
+.ava {
+  width: 100%
+}
+
+/* .penguin {
+  margin-top: 16px;
+} */
+
+.about p a {
+  text-decoration: underline;
+  color: var(--text-color-link-active);
+}
+
+.about p {
+  align-self: flex-start;
+  margin-top: 0;
+  /* padding: 10px; */
+  padding-top: 0;
+}
+
+.about p b {
+	color: var(--text-color-link);
+}
+
+.about b {
+	color: var(--text-color-link);
+}
+
+.about img {
+  align-self: flex-start;
+  /* width: 20%; */
+}
+
+@media (max-width:640px){
+    .about img {
+        display:none;
+    }
+	.about p {
+      padding-left: 0;
+	}
+}
+
+img {
+  max-width: 100%;
+}
+img[width] {
+  width: auto; /* Defer to max-width */
+}
+img[width][height] {
+  height: auto; /* Preserve aspect ratio */
+}
+
+.codetitle {
+	clear: right;
+	float: right;
+	padding: .25em 0 .25em .5em;
+	border-radius: .25em .25em 0 0;
+	font-family: var(--font-family-monospace);
+	font-size: 0.85em; /* 12px /16 */
+}
+.codetitle-left {
+	float: left;
+	clear: left;
+	padding-left: 0;
+	padding-right: .5em;
+}
+.codetitle + pre {
+	clear: both;
+}
+.codetitle {
+	float: right;
+	margin: 0 2em 0 0;
+	padding: .25em 0;
+	background-color: transparent;
+	border-width: 0;
+	box-shadow: none;
+	font-size: 0.85em; /* 12px /16 */
+	font-weight: 200;
+}
+
+.codetitle-left {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+	position: relative;
+	bottom: -2px;
+}
+.codetitle-left + .codetitle-left {
+	clear: none;
+	margin-left: 2em;
+}
+/* Message Box */
+.message-box {
+	--color-message-box: #ffc;
+
+	display: block;
+	background-color: var(--color-message-box);
+	color: var(--color-gray-90);
+	padding: 1em 0.625em; /* 16px 10px /16 */
+}
+.message-box ol {
+	margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.message-box {
+		--color-message-box: #082840;
+	}
+}
+		</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+		<header>
+			<nav>
+				<h2 class="visually-hidden">Top level navigation menu</h2>
+				<ul class="nav">
+						<li class="nav-item">
+							<a href="/">Home</a>
+						</li>
+						<li class="nav-item">
+							<a href="/blog/">Blog</a>
+						</li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			
+
+<h1>Development On Apple Silicon with Apple Container Machine</h1>
+
+<ul class="post-metadata">
+	<li>
+		<time datetime="2026-06-14">14 June 2026</time>
+	</li>
+		<li>
+			<a href="/tags/vm/" class="post-tag">vm</a>, 
+		</li>
+		<li>
+			<a href="/tags/apple-container-machine/" class="post-tag">apple container machine</a>, 
+		</li>
+		<li>
+			<a href="/tags/arm/" class="post-tag">arm</a>, 
+		</li>
+		<li>
+			<a href="/tags/macbook/" class="post-tag">macbook</a>, 
+		</li>
+		<li>
+			<a href="/tags/apple-silicon/" class="post-tag">apple silicon</a>
+		</li>
+</ul>
+
+<div class="message-box">
+	<p>Container machines are persistent Linux environments built from OCI images — your home directory is mounted in, the user account matches your host account, and the filesystem survives stop and start. <a href='https://github.com/apple/container/blob/1.0.0/docs/how-to.md#use-container-machines'>ref</a></p>
+</div>
+<p>I like the idea to isolate development stuff from my host machine, all those tools and libraries to fight with, lives in the isolated environment. The last WWDC26 announce Apple's <a href="https://github.com/apple/container/releases/tag/1.0.0">native Container tool for macOS</a>. It's WSL-ish tool to create vm's on macOS.
+I've poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to every dayly driver.</p>
+<p>This article goes through all pitfalls in order to setup dev machine, some of those ways a crunky and ugly. 😄
+But I've tried my best to overcome it.</p>
+<p>I'm going to setup machine with following requirements:</p>
+<ul>
+<li><code>golang</code> compiler</li>
+<li>ssh access for <code>Zed</code> editor</li>
+<li><code>pi</code> coding agent</li>
+</ul>
+<p>Let's start from installing the <code>container</code>, you need at least macOS 26, <a href="https://github.com/apple/container/tree/1.0.0#initial-install">follow this guide</a>.</p>
+<p>Now we need an image:</p>
+<div class="codetitle codetitle-left"><b>Dockerfile </b></div>
+<pre class="language-docker" tabindex="0"><code class="language-docker"><span class="token instruction"><span class="token keyword">FROM</span> ubuntu:26.04</span>
+
+<span class="token instruction"><span class="token keyword">ENV</span> container container</span>
+<span class="token instruction"><span class="token keyword">ENV</span> DEBIAN_FRONTEND=noninteractive</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> apt update -y &amp;&amp; apt upgrade -y &amp;&amp; apt install -y --no-install-recommends <span class="token operator">\</span>
+      curl ca-certificates git sudo systemd init systemd-sysv openssh-server <span class="token operator">\</span>
+      binutils gpg vim libc6-dev libcurl4-openssl-dev libedit2 libgcc-s1 <span class="token operator">\</span>
+      unzip gnupg2 libgcc-13-dev libstdc++-13-dev libncurses-dev <span class="token operator">\</span>
+      libpython3-dev libsqlite3-0 libstdc++6 libxml2-dev libz3-dev <span class="token operator">\</span>
+      pkg-config tzdata zlib1g-dev net-tools iproute2 iputils-ping wget jq <span class="token operator">\</span>
+      &amp;&amp; apt-get clean &amp;&amp; rm -rf /var/lib/apt/lists/*</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> echo <span class="token string">'ALL ALL=(ALL:ALL) NOPASSWD: ALL'</span> > /etc/sudoers.d/nopasswd <span class="token operator">\</span>
+ &amp;&amp; chmod 0440 /etc/sudoers.d/nopasswd</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> mkdir -p /var/run/sshd <span class="token operator">\</span>
+ &amp;&amp; ssh-keygen -A <span class="token operator">\</span>
+ &amp;&amp; sed -i <span class="token string">'s/^#\?PermitRootLogin.*/PermitRootLogin no/'</span>                    /etc/ssh/sshd_config <span class="token operator">\</span>
+ &amp;&amp; sed -i <span class="token string">'s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/'</span>     /etc/ssh/sshd_config <span class="token operator">\</span>
+ &amp;&amp; sed -i <span class="token string">'s/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/'</span>         /etc/ssh/sshd_config <span class="token operator">\</span>
+ &amp;&amp; echo <span class="token string">'UseDNS no'</span>               >> /etc/ssh/sshd_config <span class="token operator">\</span>
+ &amp;&amp; echo <span class="token string">'GSSAPIAuthentication no'</span> >> /etc/ssh/sshd_config <span class="token operator">\</span>
+ &amp;&amp; systemctl enable ssh</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> systemctl mask getty@.service systemd-logind.service <span class="token operator">\</span>
+      apt-daily.timer apt-daily-upgrade.timer fstrim.timer || true</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ <span class="token variable">$i</span> == <span class="token operator">\</span>
+systemd-tmpfiles-setup.service ] || rm -f <span class="token variable">$i</span>; done); <span class="token operator">\</span>
+rm -f /lib/systemd/system/multi-user.target.wants/*;<span class="token operator">\</span>
+rm -f /etc/systemd/system/*.wants/*;<span class="token operator">\</span>
+rm -f /lib/systemd/system/local-fs.target.wants/*; <span class="token operator">\</span>
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; <span class="token operator">\</span>
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; <span class="token operator">\</span>
+rm -f /lib/systemd/system/basic.target.wants/*;<span class="token operator">\</span>
+rm -f /lib/systemd/system/anaconda.target.wants/*;</span>
+
+<span class="token comment"># Copy ssh pub key to the image</span>
+<span class="token instruction"><span class="token keyword">COPY</span> pub-key.pub /etc/ssh/</span>
+<span class="token instruction"><span class="token keyword">RUN</span> chmod a+rwx /etc/ssh/pub-key.pub</span>
+
+<span class="token instruction"><span class="token keyword">EXPOSE</span> 22</span>
+<span class="token instruction"><span class="token keyword">STOPSIGNAL</span> SIGRTMIN+3</span>
+<span class="token instruction"><span class="token keyword">VOLUME</span> [ <span class="token string">"/sys/fs/cgroup"</span> ]</span>
+<span class="token instruction"><span class="token keyword">CMD</span> [ <span class="token string">"/usr/sbin/init"</span> ]</span>
+</code></pre>
+<p>This <code>Dockerfile</code> is partially based on an examples from <a href="https://github.com/apple/container/blob/6508acea81c193580fe07b9a61170caa50ba9443/examples/container-machine-vscode/Dockerfile">apple repository</a> and <a href="https://github.com/sokoloowski/container-machine-images">sokoloowski container images</a>.</p>
+<div class="message-box">
+<p>We need an image with init system which is used by container machine to run the container as a VM.</p>
+</div>
+<p>Build the container:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">container build <span class="token parameter variable">-t</span> local/ubuntu <span class="token parameter variable">-f</span> Dockerfile
+<span class="token punctuation">[</span>+<span class="token punctuation">]</span> Building <span class="token number">32</span>.6s <span class="token punctuation">(</span><span class="token number">13</span>/13<span class="token punctuation">)</span> FINISHED
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>resolver<span class="token punctuation">]</span> fetching image<span class="token punctuation">..</span>.docker.io/library/ubuntu:26.04                                                                                                                              <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>internal<span class="token punctuation">]</span> load build definition from Dockerfile                                                                                                                                        <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> transferring dockerfile: <span class="token number">2</span>.03kB                                                                                                                                                      <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>internal<span class="token punctuation">]</span> load .dockerignore                                                                                                                                                           <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> transferring context: 2B                                                                                                                                                             <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> CACHED oci-layout://docker.io/library/ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64                                                              <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> resolve docker.io/library/ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64                                                                       <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>internal<span class="token punctuation">]</span> load build context                                                                                                                                                           <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> transferring context: 130B                                                                                                                                                           <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">1</span>/8<span class="token punctuation">]</span> RUN <span class="token function">apt</span> update <span class="token parameter variable">-y</span> <span class="token operator">&amp;&amp;</span> <span class="token function">apt</span> upgrade <span class="token parameter variable">-y</span> <span class="token operator">&amp;&amp;</span> <span class="token function">apt</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> --no-install-recommends       <span class="token function">curl</span> ca-certificates <span class="token function">git</span> <span class="token function">sudo</span> systemd init systemd-sysv openssh-server       bi  <span class="token number">24</span>.8s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">2</span>/8<span class="token punctuation">]</span> RUN <span class="token builtin class-name">echo</span> <span class="token string">'ALL ALL=(ALL:ALL) NOPASSWD: ALL'</span> <span class="token operator">></span> /etc/sudoers.d/nopasswd  <span class="token operator">&amp;&amp;</span> <span class="token function">chmod</span> 0440 /etc/sudoers.d/nopasswd                                                           <span class="token number">0</span>.1s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">3</span>/8<span class="token punctuation">]</span> RUN <span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /var/run/sshd  <span class="token operator">&amp;&amp;</span> ssh-keygen <span class="token parameter variable">-A</span>  <span class="token operator">&amp;&amp;</span> <span class="token function">sed</span> <span class="token parameter variable">-i</span> <span class="token string">'s/^#\?PermitRootLogin.*/PermitRootLogin no/'</span>                    /etc/ssh/sshd_config  <span class="token operator">&amp;&amp;</span> <span class="token function">sed</span> <span class="token parameter variable">-i</span> 's/^<span class="token comment">#\?Pass  0.0s</span>
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">4</span>/8<span class="token punctuation">]</span> RUN systemctl mask getty@.service systemd-logind.service       apt-daily.timer apt-daily-upgrade.timer fstrim.timer <span class="token operator">||</span> <span class="token boolean">true</span>                                           <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">5</span>/8<span class="token punctuation">]</span> RUN <span class="token punctuation">(</span>cd /lib/systemd/system/sysinit.target.wants/<span class="token punctuation">;</span> <span class="token keyword">for</span> <span class="token for-or-select variable">i</span> <span class="token keyword">in</span> *<span class="token punctuation">;</span> <span class="token keyword">do</span> <span class="token punctuation">[</span> <span class="token variable">$i</span> <span class="token operator">==</span> systemd-tmpfiles-setup.service <span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token function">rm</span> <span class="token parameter variable">-f</span> <span class="token variable">$i</span><span class="token punctuation">;</span> <span class="token keyword">done</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">rm</span> <span class="token parameter variable">-f</span> /lib/systemd/system/multi-user.  <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64/v8 <span class="token number">6</span>/8<span class="token punctuation">]</span> COPY pub-key.pub /etc/ssh/                                                                                                                                         <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">[</span>linux/arm64 <span class="token number">7</span>/8<span class="token punctuation">]</span> RUN <span class="token function">chmod</span> a+rwx /etc/ssh/pub-key.pub                                                                                                                                  <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> exporting to oci image <span class="token function">format</span>                                                                                                                                                           <span class="token number">7</span>.5s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> exporting layers                                                                                                                                                                     <span class="token number">6</span>.8s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> exporting manifest sha256:e198c20df4e404915ed2bcce4d3f95e03b23c34bd9b12c52207167565337eaf5                                                                                           <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> exporting config sha256:3ca9dd443deb3f453b659f7c8791b8ce463aafc8d1fe5721588d999c3c41c609                                                                                             <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> exporting manifest list sha256:daf30df7f72b17d29cdb21617ddbb00952031d242491ef5181cb7cd00f77b228                                                                                      <span class="token number">0</span>.0s
+ <span class="token operator">=</span><span class="token operator">></span> <span class="token operator">=</span><span class="token operator">></span> sending tarball                                                                                                                                                                      <span class="token number">0</span>.7s
+local/ubuntu:latest</code></pre>
+<p>Create and check the vm machine is in the <code>running</code> state:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">container machine create local/ubuntu --set-default <span class="token parameter variable">--name</span> ubuntu
+container machine <span class="token function">ls</span>
+NAME    CREATED              IP             CPUS  MEMORY  DISK  STATE    DEFAULT
+ubuntu  <span class="token number">2026</span>-06-14 <span class="token number">14</span>:08:48  <span class="token number">192.168</span>.64.19  <span class="token number">8</span>     4G      <span class="token number">1</span>.4G  running  *</code></pre>
+<p>Next we need a setup script to install all our tools. There is no <em>user</em> at the container image build step because <code>container machine</code> uses <a href="https://github.com/apple/container/blob/main/Sources/Plugins/MachineAPIServer/Resources/create-user.sh">a custom script to create user</a> at machine first boot.</p>
+<pre class="language-sh" tabindex="0"><code class="language-sh"><span class="token shebang important">#!/usr/bin/env bash</span>
+<span class="token builtin class-name">set</span> <span class="token parameter variable">-e</span>
+
+<span class="token assign-left variable">GOLANG_VERSION</span><span class="token operator">=</span><span class="token number">1.26</span>.4
+<span class="token assign-left variable">NODE_VERSION</span><span class="token operator">=</span>v24.13.0
+
+<span class="token comment"># Golang part</span>
+<span class="token function">wget</span> https://go.dev/dl/go<span class="token variable">$GOLANG_VERSION</span>.linux-arm64.tar.gz <span class="token parameter variable">-O</span> go.tar.gz
+<span class="token function">sudo</span> <span class="token function">tar</span> <span class="token parameter variable">-C</span> /usr/local <span class="token parameter variable">-xzvf</span> go.tar.gz
+<span class="token function">rm</span> <span class="token parameter variable">-rf</span> go go.tar.gz
+<span class="token builtin class-name">echo</span> <span class="token string">'export GOROOT=/usr/local/go'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export GOPATH=$HOME/.go'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export GOCACHE=$HOME/.go/cache'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export PATH="$(npm config get prefix)/bin:$PATH"'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export PI_OFFLINE=1'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+<span class="token builtin class-name">echo</span> <span class="token string">'export PI_TELEMETRY=0'</span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.bashrc
+
+<span class="token comment"># Node &amp; Pi agent</span>
+<span class="token function">curl</span> -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh <span class="token operator">|</span> <span class="token function">bash</span>
+<span class="token builtin class-name">.</span> <span class="token environment constant">$HOME</span>/.nvm/nvm.sh
+nvm <span class="token function">install</span> <span class="token variable">$NODE_VERSION</span>
+nvm <span class="token builtin class-name">alias</span> default <span class="token variable">$NODE_VERSION</span>
+<span class="token builtin class-name">echo</span> <span class="token string">'install pi agent ...'</span>
+
+<span class="token comment"># Pi Agent</span>
+<span class="token function">npm</span> <span class="token function">install</span> <span class="token parameter variable">-g</span> --ignore-scripts @earendil-works/pi-coding-agent
+<span class="token function">npm</span> root <span class="token parameter variable">-g</span>
+pi <span class="token parameter variable">--version</span>
+
+<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> <span class="token environment constant">$HOME</span>/.ssh
+<span class="token builtin class-name">echo</span> <span class="token variable"><span class="token variable">$(</span><span class="token function">cat</span> /etc/ssh/pub-key.pub<span class="token variable">)</span></span> <span class="token operator">>></span> <span class="token environment constant">$HOME</span>/.ssh/authorized_keys
+<span class="token function">sudo</span> systemctl start sshd.service</code></pre>
+<p>Since the <code>/Users/...</code> folder from the host will be mounted to the VM we can use scripts from the host and setup our vm after boot.</p>
+<p>This script will be placed to the directory automatically mounted to the machine.</p>
+<p>Run script from within machine:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">container machine run <span class="token parameter variable">-n</span> ubuntu
+<span class="token comment"># cd to directory with script ./setup.sh</span>
+<span class="token builtin class-name">exit</span></code></pre>
+<p>Next we're going to setup dns in order to access a host service (macOS <code>localhost</code>) from within our vm and reach the vm from host machine.</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token comment"># To access guest from host</span>
+<span class="token function">sudo</span> container system dns create machine
+<span class="token comment"># To access host from the guest</span>
+<span class="token function">sudo</span> container system dns create host.container.internal <span class="token parameter variable">--localhost</span> <span class="token number">203.0</span>.113.113</code></pre>
+<p>Now lets use Zed to connect to our vm.</p>
+<div class="codetitle codetitle-left"><b>~/.ssh/config </b>The host ssh config</div>
+<pre class="language-yaml" tabindex="0"><code class="language-yaml">Host ubuntu.machine
+   HostName ubuntu.machine
+   ForwardAgent yes
+   StrictHostKeyChecking no
+   <span class="token comment"># PreferredAuthentications password</span>
+   <span class="token comment"># PubkeyAuthentication no</span>
+   UserKnownHostsFile /dev/null</code></pre>
+<p>After this change in the  host ssh config we can choose our vm in the Zed editor <code>Remote projects</code> feature.</p>
+<p>I'm using <code>oMLX</code> and local models with open weights so my <code>pi</code> configuration is pointed to <code>host.container.internal</code> and from the <code>pi</code> side everything works smooth. 🆒</p>
+<div class="codetitle codetitle-left"><b>~/.pi/agent/models.json </b>The pi config file</div>
+<pre class="language-json" tabindex="0"><code class="language-json"><span class="token punctuation">{</span>
+  <span class="token property">"providers"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"omlx"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"baseUrl"</span><span class="token operator">:</span> <span class="token string">"http://host.container.internal:8000/v1"</span><span class="token punctuation">,</span>
+      <span class="token property">"api"</span><span class="token operator">:</span> <span class="token string">"openai-completions"</span><span class="token punctuation">,</span>
+      <span class="token property">"apiKey"</span><span class="token operator">:</span> <span class="token string">"none"</span><span class="token punctuation">,</span>
+      <span class="token property">"compat"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"supportsUsageInStreaming"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+        <span class="token property">"maxTokensField"</span><span class="token operator">:</span> <span class="token string">"max_tokens"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"models"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token property">"id"</span><span class="token operator">:</span> <span class="token string">"Nemotron-3-Nano"</span><span class="token punctuation">,</span>
+          <span class="token property">"reasoning"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+          <span class="token property">"thinking"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+          <span class="token property">"contextWindow"</span><span class="token operator">:</span> <span class="token number">131072</span><span class="token punctuation">,</span>
+          <span class="token property">"maxTokens"</span><span class="token operator">:</span> <span class="token number">32768</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+...</code></pre>
+<p>The <code>pi</code> data directory is on the host and guest vm <code>pi</code> instance reads <code>$PI_CODING_AGENT_DIR</code> variable.</p>
+<div class="codetitle codetitle-left"><b> </b>The bashrc on the guest</div>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">PI_CODING_AGENT_DIR</span><span class="token operator">=</span><span class="token string">"/Users/my-user/.pi/agent"</span></code></pre>
+<p>Lets login to the guest vm and run <code>pi</code> command.</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">container machine run <span class="token parameter variable">-n</span> ubuntu
+pi</code></pre>
+<p><picture><source type="image/gif" srcset="/img/QOj0efDbiq-900.gif 900w"><source type="image/avif" srcset="/img/QOj0efDbiq-900.avif 900w"><source type="image/webp" srcset="/img/QOj0efDbiq-900.webp 900w"><img src="/img/QOj0efDbiq-900.png" alt="agent screentshot" loading="lazy" decoding="async" width="900" height="783"></picture></p>
+<h3 id="the-pros" tabindex="-1">the pros <a class="header-anchor" href="#the-pros">#</a></h3>
+<ul>
+<li><strong>pros</strong> - Overall UX is as cool as the <a href="https://lima-vm.io/docs/installation/"><code>lima</code></a>, you just write a bunch of commands and everything seems to work.</li>
+<li><strong>pros</strong> - Pretty fast on the large codebases.</li>
+<li><strong>pros</strong> - Reproducable because of <code>docker</code>-like expirience.</li>
+</ul>
+<h3 id="and-cons" tabindex="-1">and cons <a class="header-anchor" href="#and-cons">#</a></h3>
+<ul>
+<li><strong>cons</strong> - Cumbersome stuff with dns</li>
+<li><strong>cons</strong> - Cant run provision script since user created at the first boot.</li>
+<li><strong>cons</strong> - Host mounts all <code>/Users/my-user</code> folder, you can only set <code>rw,ro,none</code> mount options, that a sad thing.</li>
+</ul>
+<p>Check out my other howtos:</p>
+<ul>
+<li><a href="/blog/development-on-mac-with-utm/">Development On Apple Silicon with UTM</a></li>
+<li><a href="/blog/development-on-mac-with-lima/">Development On Apple Silicon with Lima</a></li>
+</ul>
+<p>Happy coding!</p>
+
+		<ul class="links-nextprev">
+				<li>Previous: <a href="/blog/teleskopio-mcp/">The teleskopio MCP Server and llama.cpp</a>
+				</li>
+			
+		</ul>
+		</main>
+
+		<footer></footer>
+
+		<!-- Current page: /blog/development-on-mac-with-acm/ -->
+	</body>
+</html>

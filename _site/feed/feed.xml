@@ -4,12 +4,219 @@
 	<subtitle>Insights from the Daily Life of a Engineer</subtitle>
 	<link href="https://rkiselenko.dev/feed/feed.xml" rel="self"/>
 	<link href="https://rkiselenko.dev/"/>
-	<updated>2026-05-29T00:00:00Z</updated>
+	<updated>2026-06-14T00:00:00Z</updated>
 	<id>https://rkiselenko.dev/</id>
 	<author>
 		<name>Roman Kiselenko</name>
 		<email>roman.kiselenko.dev@gmail.com</email>
 	</author>
+	
+	<entry>
+		<title>Development On Apple Silicon with Apple Container Machine</title>
+		<link href="https://rkiselenko.dev/blog/development-on-mac-with-acm/"/>
+		<updated>2026-06-14T00:00:00Z</updated>
+		<id>https://rkiselenko.dev/blog/development-on-mac-with-acm/</id>
+		<content type="html">&lt;div class=&quot;message-box&quot;&gt;
+	&lt;p&gt;Container machines are persistent Linux environments built from OCI images — your home directory is mounted in, the user account matches your host account, and the filesystem survives stop and start. &lt;a href=&quot;https://github.com/apple/container/blob/1.0.0/docs/how-to.md#use-container-machines&quot;&gt;ref&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;I like the idea to isolate development stuff from my host machine, all those tools and libraries to fight with, lives in the isolated environment. The last WWDC26 announce Apple&#39;s &lt;a href=&quot;https://github.com/apple/container/releases/tag/1.0.0&quot;&gt;native Container tool for macOS&lt;/a&gt;. It&#39;s WSL-ish tool to create vm&#39;s on macOS.
+I&#39;ve poke around little bit and trying to setup development machine with all tools in there. The goal is to understand how robust it and does it ready to every dayly driver.&lt;/p&gt;
+&lt;p&gt;This article goes through all pitfalls in order to setup dev machine, some of those ways a crunky and ugly. 😄
+But I&#39;ve tried my best to overcome it.&lt;/p&gt;
+&lt;p&gt;I&#39;m going to setup machine with following requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;golang&lt;/code&gt; compiler&lt;/li&gt;
+&lt;li&gt;ssh access for &lt;code&gt;Zed&lt;/code&gt; editor&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pi&lt;/code&gt; coding agent&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let&#39;s start from installing the &lt;code&gt;container&lt;/code&gt;, you need at least macOS 26, &lt;a href=&quot;https://github.com/apple/container/tree/1.0.0#initial-install&quot;&gt;follow this guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now we need an image:&lt;/p&gt;
+&lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;Dockerfile &lt;/b&gt;&lt;/div&gt;
+&lt;pre class=&quot;language-docker&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-docker&quot;&gt;&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;FROM&lt;/span&gt; ubuntu:26.04&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;ENV&lt;/span&gt; container container&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;ENV&lt;/span&gt; DEBIAN_FRONTEND=noninteractive&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; apt update -y &amp;amp;&amp;amp; apt upgrade -y &amp;amp;&amp;amp; apt install -y --no-install-recommends &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      curl ca-certificates git sudo systemd init systemd-sysv openssh-server &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      binutils gpg vim libc6-dev libcurl4-openssl-dev libedit2 libgcc-s1 &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      unzip gnupg2 libgcc-13-dev libstdc++-13-dev libncurses-dev &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      libpython3-dev libsqlite3-0 libstdc++6 libxml2-dev libz3-dev &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      pkg-config tzdata zlib1g-dev net-tools iproute2 iputils-ping wget jq &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      &amp;amp;&amp;amp; apt-get clean &amp;amp;&amp;amp; rm -rf /var/lib/apt/lists/*&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; echo &lt;span class=&quot;token string&quot;&gt;&#39;ALL ALL=(ALL:ALL) NOPASSWD: ALL&#39;&lt;/span&gt; &gt; /etc/sudoers.d/nopasswd &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; chmod 0440 /etc/sudoers.d/nopasswd&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; mkdir -p /var/run/sshd &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; ssh-keygen -A &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; sed -i &lt;span class=&quot;token string&quot;&gt;&#39;s/^#&#92;?PermitRootLogin.*/PermitRootLogin no/&#39;&lt;/span&gt;                    /etc/ssh/sshd_config &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; sed -i &lt;span class=&quot;token string&quot;&gt;&#39;s/^#&#92;?PasswordAuthentication.*/PasswordAuthentication yes/&#39;&lt;/span&gt;     /etc/ssh/sshd_config &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; sed -i &lt;span class=&quot;token string&quot;&gt;&#39;s/^#&#92;?PubkeyAuthentication.*/PubkeyAuthentication yes/&#39;&lt;/span&gt;         /etc/ssh/sshd_config &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; echo &lt;span class=&quot;token string&quot;&gt;&#39;UseDNS no&#39;&lt;/span&gt;               &gt;&gt; /etc/ssh/sshd_config &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; echo &lt;span class=&quot;token string&quot;&gt;&#39;GSSAPIAuthentication no&#39;&lt;/span&gt; &gt;&gt; /etc/ssh/sshd_config &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+ &amp;amp;&amp;amp; systemctl enable ssh&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; systemctl mask getty@.service systemd-logind.service &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+      apt-daily.timer apt-daily-upgrade.timer fstrim.timer || true&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ &lt;span class=&quot;token variable&quot;&gt;$i&lt;/span&gt; == &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+systemd-tmpfiles-setup.service ] || rm -f &lt;span class=&quot;token variable&quot;&gt;$i&lt;/span&gt;; done); &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/multi-user.target.wants/*;&lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /etc/systemd/system/*.wants/*;&lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/local-fs.target.wants/*; &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; &lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/basic.target.wants/*;&lt;span class=&quot;token operator&quot;&gt;&#92;&lt;/span&gt;
+rm -f /lib/systemd/system/anaconda.target.wants/*;&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# Copy ssh pub key to the image&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;COPY&lt;/span&gt; pub-key.pub /etc/ssh/&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; chmod a+rwx /etc/ssh/pub-key.pub&lt;/span&gt;
+
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;EXPOSE&lt;/span&gt; 22&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;STOPSIGNAL&lt;/span&gt; SIGRTMIN+3&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;VOLUME&lt;/span&gt; [ &lt;span class=&quot;token string&quot;&gt;&quot;/sys/fs/cgroup&quot;&lt;/span&gt; ]&lt;/span&gt;
+&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;CMD&lt;/span&gt; [ &lt;span class=&quot;token string&quot;&gt;&quot;/usr/sbin/init&quot;&lt;/span&gt; ]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This &lt;code&gt;Dockerfile&lt;/code&gt; is partially based on an examples from &lt;a href=&quot;https://github.com/apple/container/blob/6508acea81c193580fe07b9a61170caa50ba9443/examples/container-machine-vscode/Dockerfile&quot;&gt;apple repository&lt;/a&gt; and &lt;a href=&quot;https://github.com/sokoloowski/container-machine-images&quot;&gt;sokoloowski container images&lt;/a&gt;.&lt;/p&gt;
+&lt;div class=&quot;message-box&quot;&gt;
+&lt;p&gt;We need an image with init system which is used by container machine to run the container as a VM.&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;Build the container:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container build &lt;span class=&quot;token parameter variable&quot;&gt;-t&lt;/span&gt; local/ubuntu &lt;span class=&quot;token parameter variable&quot;&gt;-f&lt;/span&gt; Dockerfile
+&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;+&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Building &lt;span class=&quot;token number&quot;&gt;32&lt;/span&gt;.6s &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;13&lt;/span&gt;/13&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; FINISHED
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;resolver&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; fetching image&lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.docker.io/library/ubuntu:26.04                                                                                                                              &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;internal&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; load build definition from Dockerfile                                                                                                                                        &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; transferring dockerfile: &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;.03kB                                                                                                                                                      &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;internal&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; load .dockerignore                                                                                                                                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; transferring context: 2B                                                                                                                                                             &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; CACHED oci-layout://docker.io/library/ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64                                                              &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; resolve docker.io/library/ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64                                                                       &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;internal&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; load build context                                                                                                                                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; transferring context: 130B                                                                                                                                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; update &lt;span class=&quot;token parameter variable&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; upgrade &lt;span class=&quot;token parameter variable&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-y&lt;/span&gt; --no-install-recommends       &lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt; ca-certificates &lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; systemd init systemd-sysv openssh-server       bi  &lt;span class=&quot;token number&quot;&gt;24&lt;/span&gt;.8s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN &lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;ALL ALL=(ALL:ALL) NOPASSWD: ALL&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; /etc/sudoers.d/nopasswd  &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;chmod&lt;/span&gt; 0440 /etc/sudoers.d/nopasswd                                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.1s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN &lt;span class=&quot;token function&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-p&lt;/span&gt; /var/run/sshd  &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; ssh-keygen &lt;span class=&quot;token parameter variable&quot;&gt;-A&lt;/span&gt;  &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;s/^#&#92;?PermitRootLogin.*/PermitRootLogin no/&#39;&lt;/span&gt;                    /etc/ssh/sshd_config  &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-i&lt;/span&gt; &#39;s/^&lt;span class=&quot;token comment&quot;&gt;#&#92;?Pass  0.0s&lt;/span&gt;
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN systemctl mask getty@.service systemd-logind.service       apt-daily.timer apt-daily-upgrade.timer fstrim.timer &lt;span class=&quot;token operator&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;cd /lib/systemd/system/sysinit.target.wants/&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token for-or-select variable&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; *&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;$i&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; systemd-tmpfiles-setup.service &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;rm&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-f&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;done&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;rm&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-f&lt;/span&gt; /lib/systemd/system/multi-user.  &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64/v8 &lt;span class=&quot;token number&quot;&gt;6&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; COPY pub-key.pub /etc/ssh/                                                                                                                                         &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;linux/arm64 &lt;span class=&quot;token number&quot;&gt;7&lt;/span&gt;/8&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; RUN &lt;span class=&quot;token function&quot;&gt;chmod&lt;/span&gt; a+rwx /etc/ssh/pub-key.pub                                                                                                                                  &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; exporting to oci image &lt;span class=&quot;token function&quot;&gt;format&lt;/span&gt;                                                                                                                                                           &lt;span class=&quot;token number&quot;&gt;7&lt;/span&gt;.5s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; exporting layers                                                                                                                                                                     &lt;span class=&quot;token number&quot;&gt;6&lt;/span&gt;.8s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; exporting manifest sha256:e198c20df4e404915ed2bcce4d3f95e03b23c34bd9b12c52207167565337eaf5                                                                                           &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; exporting config sha256:3ca9dd443deb3f453b659f7c8791b8ce463aafc8d1fe5721588d999c3c41c609                                                                                             &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; exporting manifest list sha256:daf30df7f72b17d29cdb21617ddbb00952031d242491ef5181cb7cd00f77b228                                                                                      &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.0s
+ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; sending tarball                                                                                                                                                                      &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;.7s
+local/ubuntu:latest&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Create and check the vm machine is in the &lt;code&gt;running&lt;/code&gt; state:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine create local/ubuntu --set-default &lt;span class=&quot;token parameter variable&quot;&gt;--name&lt;/span&gt; ubuntu
+container machine &lt;span class=&quot;token function&quot;&gt;ls&lt;/span&gt;
+NAME    CREATED              IP             CPUS  MEMORY  DISK  STATE    DEFAULT
+ubuntu  &lt;span class=&quot;token number&quot;&gt;2026&lt;/span&gt;-06-14 &lt;span class=&quot;token number&quot;&gt;14&lt;/span&gt;:08:48  &lt;span class=&quot;token number&quot;&gt;192.168&lt;/span&gt;.64.19  &lt;span class=&quot;token number&quot;&gt;8&lt;/span&gt;     4G      &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;.4G  running  *&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next we need a setup script to install all our tools. There is no &lt;em&gt;user&lt;/em&gt; at the container image build step because &lt;code&gt;container machine&lt;/code&gt; uses &lt;a href=&quot;https://github.com/apple/container/blob/main/Sources/Plugins/MachineAPIServer/Resources/create-user.sh&quot;&gt;a custom script to create user&lt;/a&gt; at machine first boot.&lt;/p&gt;
+&lt;pre class=&quot;language-sh&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-sh&quot;&gt;&lt;span class=&quot;token shebang important&quot;&gt;#!/usr/bin/env bash&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;set&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-e&lt;/span&gt;
+
+&lt;span class=&quot;token assign-left variable&quot;&gt;GOLANG_VERSION&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1.26&lt;/span&gt;.4
+&lt;span class=&quot;token assign-left variable&quot;&gt;NODE_VERSION&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;v24.13.0
+
+&lt;span class=&quot;token comment&quot;&gt;# Golang part&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;wget&lt;/span&gt; https://go.dev/dl/go&lt;span class=&quot;token variable&quot;&gt;$GOLANG_VERSION&lt;/span&gt;.linux-arm64.tar.gz &lt;span class=&quot;token parameter variable&quot;&gt;-O&lt;/span&gt; go.tar.gz
+&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;tar&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-C&lt;/span&gt; /usr/local &lt;span class=&quot;token parameter variable&quot;&gt;-xzvf&lt;/span&gt; go.tar.gz
+&lt;span class=&quot;token function&quot;&gt;rm&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-rf&lt;/span&gt; go go.tar.gz
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export GOROOT=/usr/local/go&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export GOPATH=$HOME/.go&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export PATH=$GOPATH/bin:$GOROOT/bin:$PATH&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export GOCACHE=$HOME/.go/cache&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export PATH=&quot;$(npm config get prefix)/bin:$PATH&quot;&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export PI_OFFLINE=1&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;export PI_TELEMETRY=0&#39;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.bashrc
+
+&lt;span class=&quot;token comment&quot;&gt;# Node &amp;amp; Pi agent&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt; -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;bash&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.nvm/nvm.sh
+nvm &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;$NODE_VERSION&lt;/span&gt;
+nvm &lt;span class=&quot;token builtin class-name&quot;&gt;alias&lt;/span&gt; default &lt;span class=&quot;token variable&quot;&gt;$NODE_VERSION&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;install pi agent ...&#39;&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;# Pi Agent&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;npm&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-g&lt;/span&gt; --ignore-scripts @earendil-works/pi-coding-agent
+&lt;span class=&quot;token function&quot;&gt;npm&lt;/span&gt; root &lt;span class=&quot;token parameter variable&quot;&gt;-g&lt;/span&gt;
+pi &lt;span class=&quot;token parameter variable&quot;&gt;--version&lt;/span&gt;
+
+&lt;span class=&quot;token function&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.ssh
+&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; /etc/ssh/pub-key.pub&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token environment constant&quot;&gt;$HOME&lt;/span&gt;/.ssh/authorized_keys
+&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; systemctl start sshd.service&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Since the &lt;code&gt;/Users/...&lt;/code&gt; folder from the host will be mounted to the VM we can use scripts from the host and setup our vm after boot.&lt;/p&gt;
+&lt;p&gt;This script will be placed to the directory automatically mounted to the machine.&lt;/p&gt;
+&lt;p&gt;Run script from within machine:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine run &lt;span class=&quot;token parameter variable&quot;&gt;-n&lt;/span&gt; ubuntu
+&lt;span class=&quot;token comment&quot;&gt;# cd to directory with script ./setup.sh&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;exit&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next we&#39;re going to setup dns in order to access a host service (macOS &lt;code&gt;localhost&lt;/code&gt;) from within our vm and reach the vm from host machine.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;# To access guest from host&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; container system dns create machine
+&lt;span class=&quot;token comment&quot;&gt;# To access host from the guest&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; container system dns create host.container.internal &lt;span class=&quot;token parameter variable&quot;&gt;--localhost&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;203.0&lt;/span&gt;.113.113&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now lets use Zed to connect to our vm.&lt;/p&gt;
+&lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;~/.ssh/config &lt;/b&gt;The host ssh config&lt;/div&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;Host ubuntu.machine
+   HostName ubuntu.machine
+   ForwardAgent yes
+   StrictHostKeyChecking no
+   &lt;span class=&quot;token comment&quot;&gt;# PreferredAuthentications password&lt;/span&gt;
+   &lt;span class=&quot;token comment&quot;&gt;# PubkeyAuthentication no&lt;/span&gt;
+   UserKnownHostsFile /dev/null&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;After this change in the  host ssh config we can choose our vm in the Zed editor &lt;code&gt;Remote projects&lt;/code&gt; feature.&lt;/p&gt;
+&lt;p&gt;I&#39;m using &lt;code&gt;oMLX&lt;/code&gt; and local models with open weights so my &lt;code&gt;pi&lt;/code&gt; configuration is pointed to &lt;code&gt;host.container.internal&lt;/code&gt; and from the &lt;code&gt;pi&lt;/code&gt; side everything works smooth. 🆒&lt;/p&gt;
+&lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;~/.pi/agent/models.json &lt;/b&gt;The pi config file&lt;/div&gt;
+&lt;pre class=&quot;language-json&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-json&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;&quot;providers&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token property&quot;&gt;&quot;omlx&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;baseUrl&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;http://host.container.internal:8000/v1&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;openai-completions&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;apiKey&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;none&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;compat&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token property&quot;&gt;&quot;supportsUsageInStreaming&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;token property&quot;&gt;&quot;maxTokensField&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;max_tokens&quot;&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;models&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;token property&quot;&gt;&quot;id&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Nemotron-3-Nano&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;token property&quot;&gt;&quot;reasoning&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;token property&quot;&gt;&quot;thinking&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;token property&quot;&gt;&quot;contextWindow&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;131072&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+          &lt;span class=&quot;token property&quot;&gt;&quot;maxTokens&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;32768&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;code&gt;pi&lt;/code&gt; data directory is on the host and guest vm &lt;code&gt;pi&lt;/code&gt; instance reads &lt;code&gt;$PI_CODING_AGENT_DIR&lt;/code&gt; variable.&lt;/p&gt;
+&lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt; &lt;/b&gt;The bashrc on the guest&lt;/div&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;PI_CODING_AGENT_DIR&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/Users/my-user/.pi/agent&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lets login to the guest vm and run &lt;code&gt;pi&lt;/code&gt; command.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;container machine run &lt;span class=&quot;token parameter variable&quot;&gt;-n&lt;/span&gt; ubuntu
+pi&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/QOj0efDbiq-900.png&quot; alt=&quot;agent screentshot&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;783&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;h3 id=&quot;the-pros&quot; tabindex=&quot;-1&quot;&gt;the pros &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-acm/#the-pros&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Overall UX is as cool as the &lt;a href=&quot;https://lima-vm.io/docs/installation/&quot;&gt;&lt;code&gt;lima&lt;/code&gt;&lt;/a&gt;, you just write a bunch of commands and everything seems to work.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Pretty fast on the large codebases.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;pros&lt;/strong&gt; - Reproducable because of &lt;code&gt;docker&lt;/code&gt;-like expirience.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;and-cons&quot; tabindex=&quot;-1&quot;&gt;and cons &lt;a class=&quot;header-anchor&quot; href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-acm/#and-cons&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Cumbersome stuff with dns&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Cant run provision script since user created at the first boot.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt; - Host mounts all &lt;code&gt;/Users/my-user&lt;/code&gt; folder, you can only set &lt;code&gt;rw,ro,none&lt;/code&gt; mount options, that a sad thing.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Check out my other howtos:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-utm/&quot;&gt;Development On Apple Silicon with UTM&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://rkiselenko.dev/blog/development-on-mac-with-lima/&quot;&gt;Development On Apple Silicon with Lima&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Happy coding!&lt;/p&gt;
+</content>
+	</entry>
 	
 	<entry>
 		<title>The teleskopio MCP Server and llama.cpp</title>
