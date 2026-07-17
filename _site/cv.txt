@@ -7,7 +7,7 @@ linkedin: https://www.linkedin.com/in/roman-kiselenko/
 github: https://github.com/roman-kiselenko
 
 ## PROFESSIONAL SUMMARY
-Golang Engineer with 10+ years of experience transforming infrastructure engineering for the AI era. Expert in Kubernetes, cloud-native architecture, and modern AI stacks. Proven track record of delivering production-grade LLM infrastructure and building robust development pipelines with AI-powered coding agents.
+Full-cycle engineer and technical lead. I bridge product logic with infrastructure reliability, security, and observability. Experienced in building high-load data validation systems, implementing quality gates, and managing cross-functional teams to deliver fault-tolerant, audit-ready solutions.
 
 Key Responsibilities:
 - Building production-grade LLM infrastructure and AI systems
