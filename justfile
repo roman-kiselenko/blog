@@ -8,7 +8,7 @@ run:
   docker run -it -p 8080:8080 -v $(pwd)/content:/app/content --rm blog
 
 build-static:
-  docker run -it -v $(pwd)/_site:/app/_site --rm blog pnpm build-ghpages
+  docker run -it -v $(pwd)/content:/app/content -v $(pwd)/_site:/app/_site --rm blog pnpm build-ghpages
 
 build:
   docker build -t blog .
