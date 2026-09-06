@@ -7,7 +7,7 @@ tags:
 - vm
 - lima
 - arm
-- macbook
+- mac
 - apple silicon
 ---
 
@@ -23,7 +23,7 @@ In this article, I'll demonstrate how to provision a Virtual Machine for softwar
 
 It's better to install `Lima` with `brew`, follow the instruction [here.](https://lima-vm.io/docs/installation/)
 
-### Create VM 
+### Create VM
 
 Next step is create a VM:
 
@@ -68,7 +68,7 @@ mounts:
 
 Next add provision scripts in order to install all needed runtime dependencies:
 
-Upgrade the instance on boot 
+Upgrade the instance on boot
 
 ```yaml
 upgradePackages: true

@@ -1,3 +1,5 @@
+name := "blog"
+agent := "-p 7777:7777 -v $HOME/Documents/dev/opensource/container-machine-images/agent:/home/node/.pi/agent"
 @_default:
 	just --list
 
@@ -5,11 +7,11 @@ system-info:
   @echo "This is an {{arch()}} machine".
 
 run:
-  docker run -it -p 8080:8080 -v $(pwd)/content:/app/content --rm blog
+  container run --name {{ name }} --rm -it -p 8080:8080 --mount type=volume,target=/home/node/pnpm-store -v $(pwd):/home/node/blog {{ agent }} local/blog
 
 build-static:
-  docker run -it -v $(pwd)/content:/app/content -v $(pwd)/_site:/app/_site --rm blog pnpm build-ghpages
+  container run -it --rm --name {{ name }} -v $(pwd)/content:/app/content -v $(pwd)/_site:/app/_site local/blog pnpm build-ghpages
 
 build:
-  docker build -t blog .
+  container build -t local/blog -f Dockerfile
 

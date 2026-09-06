@@ -12,12 +12,9 @@
 		<meta property="og:url" content="https://rkiselenko.dev/blog/development-on-mac-with-acm/">
 		<meta name="image" property="og:image" content="https://rkiselenko.dev/img/pi.png">
 		<meta name="twitter:card" content="summary">
-		<meta name="keywords" content="posts,vm,apple container machine,arm,macbook,apple silicon"/>
+		<meta name="keywords" content="posts,vm,apple container machine,apple containers,arm,mac,apple silicon"/>
 		<meta name="twitter:site" content="@shindu666">
 		<meta name="twitter:image" content="https://rkiselenko.dev/img/pi.png">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet"/>
 		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
 		<link rel="manifest" href="/manifest.json"/>
@@ -86,7 +83,15 @@ pre[class*="language-diff-"] {
 	font-optical-sizing: auto;
 	font-weight: 400;
 	font-style: normal;
-	--font-family-monospace: "Iosevka Web", monospace;
+	--font-family-monospace: "0xProto", monospace;
+}
+
+@font-face {
+  font-family: '0xProto';
+  src: url('/fonts/0xProto-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* Theme colors */
@@ -278,7 +283,7 @@ pre,
 code[class*="language-"] {
 	font-family: var(--font-family-monospace);
 	line-height: 1; /* 22px /16 */
-    font-size: 1em;
+    font-size: 0.8em;
 }
 pre:not([class*="language-"]) {
 	margin: .5em 0;
@@ -594,10 +599,13 @@ img[width][height] {
 			<a href="/tags/apple-container-machine/" class="post-tag">apple container machine</a>, 
 		</li>
 		<li>
+			<a href="/tags/apple-containers/" class="post-tag">apple containers</a>, 
+		</li>
+		<li>
 			<a href="/tags/arm/" class="post-tag">arm</a>, 
 		</li>
 		<li>
-			<a href="/tags/macbook/" class="post-tag">macbook</a>, 
+			<a href="/tags/mac/" class="post-tag">mac</a>, 
 		</li>
 		<li>
 			<a href="/tags/apple-silicon/" class="post-tag">apple silicon</a>
@@ -810,6 +818,9 @@ pi</code></pre>
 
 		<ul class="links-nextprev">
 				<li>Previous: <a href="/blog/teleskopio-mcp/">The teleskopio MCP Server and llama.cpp</a>
+				</li>
+			
+				<li>Next: <a href="/blog/disposable-envs-for-agents/">Disposable environments for local, LLM-based AI agents</a>
 				</li>
 			
 		</ul>

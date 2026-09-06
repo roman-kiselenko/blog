@@ -6,7 +6,15 @@
 	font-optical-sizing: auto;
 	font-weight: 400;
 	font-style: normal;
-	--font-family-monospace: "Iosevka Web", monospace;
+	--font-family-monospace: "0xProto", monospace;
+}
+
+@font-face {
+  font-family: '0xProto';
+  src: url('/fonts/0xProto-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* Theme colors */
@@ -198,7 +206,7 @@ pre,
 code[class*="language-"] {
 	font-family: var(--font-family-monospace);
 	line-height: 1; /* 22px /16 */
-    font-size: 1em;
+    font-size: 0.8em;
 }
 pre:not([class*="language-"]) {
 	margin: .5em 0;

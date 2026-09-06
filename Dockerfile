@@ -1,16 +1,9 @@
-FROM node:22-alpine AS base
+FROM node:lts-alpine3.24
 RUN corepack enable
+RUN apk add --update curl python3 make g++ && rm -rf /var/cache/apk/*
+RUN npm install -g @agegr/pi-web@latest
+USER node
 
-# --- Dependencies ---
-FROM base AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN pnpm install --dangerously-allow-all-builds
-
-# --- Build ---
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-CMD ["pnpm", "start"]
+
+CMD ["pi-web", "-p", "7777", "-H", "0.0.0.0", "--no-open"]

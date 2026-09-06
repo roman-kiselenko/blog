@@ -15,9 +15,6 @@
 		<meta name="keywords" content="posts,llm,golang,mcp,kubernetes,k8s,teleskopio"/>
 		<meta name="twitter:site" content="@shindu666">
 		<meta name="twitter:image" content="https://rkiselenko.dev/img/teleskopio+mcp.png">
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://iosevka-webfonts.github.io/iosevka/iosevka.css" rel="stylesheet"/>
 		<link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
 		<link rel="manifest" href="/manifest.json"/>
@@ -86,7 +83,15 @@ pre[class*="language-diff-"] {
 	font-optical-sizing: auto;
 	font-weight: 400;
 	font-style: normal;
-	--font-family-monospace: "Iosevka Web", monospace;
+	--font-family-monospace: "0xProto", monospace;
+}
+
+@font-face {
+  font-family: '0xProto';
+  src: url('/fonts/0xProto-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* Theme colors */
@@ -278,7 +283,7 @@ pre,
 code[class*="language-"] {
 	font-family: var(--font-family-monospace);
 	line-height: 1; /* 22px /16 */
-    font-size: 1em;
+    font-size: 0.8em;
 }
 pre:not([class*="language-"]) {
 	margin: .5em 0;

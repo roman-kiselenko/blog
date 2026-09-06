@@ -6,8 +6,9 @@ image: pi.png
 tags:
 - vm
 - apple container machine
+- apple containers
 - arm
-- macbook
+- mac
 - apple silicon
 ---
 

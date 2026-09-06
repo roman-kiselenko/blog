@@ -7,7 +7,7 @@ tags:
 - vm
 - utm
 - arm
-- macbook
+- mac
 - apple silicon
 ---
 

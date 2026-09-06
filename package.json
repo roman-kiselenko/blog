@@ -5,7 +5,7 @@
 	"scripts": {
 		"build": "npx @11ty/eleventy",
 		"build-ghpages": "npx @11ty/eleventy --pathprefix=/",
-		"start": "npx @11ty/eleventy --serve --quiet",
+		"start": "CHOKIDAR_USEPOLLING=1 CHOKIDAR_INTERVAL=500 npx @11ty/eleventy --serve --quiet",
 		"debug": "DEBUG=Eleventy* npx @11ty/eleventy",
 		"debugstart": "DEBUG=Eleventy* npx @11ty/eleventy --serve --quiet",
 		"benchmark": "DEBUG=Eleventy:Benchmark* npx @11ty/eleventy"
