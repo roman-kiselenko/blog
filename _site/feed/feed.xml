@@ -23,13 +23,27 @@ the task. Today&#39;s reality is the &lt;code&gt;yolo&lt;/code&gt; mode enabled 
 &lt;p&gt;YOLO mode in AI coding agents lets the tool execute file changes and shell commands completely on its own without stopping to ask for your permission.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;I don&#39;t want to clean the garbage agent produce, but I like the new development techniques where agents do the work for you.&lt;/p&gt;
-&lt;p&gt;I treat working agents as a minion squad, in most cases that squad doing &lt;em&gt;shit&lt;/em&gt;, writing scripts I&#39;ll never need, installing tools I&#39;ll never touch. But that&#39;s a new way of working, you&#39;re in charge of validating the work.&lt;/p&gt;
+&lt;p&gt;I treat working agents as a minion squad, in most cases that squad makes &lt;em&gt;shit&lt;/em&gt; - scripts I&#39;ll never need, tools I&#39;ll never touch. But that&#39;s a new way of working, you&#39;re in charge of validating the work.&lt;/p&gt;
 &lt;p&gt;Just like in the funny movie about &lt;em&gt;minions&lt;/em&gt; they screw a lot of things up, so I need a way to keep them in the isolated rooms - those rooms must be disposable, and the mess inside must not bother me.&lt;/p&gt;
 &lt;p&gt;The tools I&#39;m using - &lt;a href=&quot;https://omlx.ai/&quot;&gt;oMLX&lt;/a&gt;, &lt;a href=&quot;https://github.com/apple/container#initial-install&quot;&gt;container&lt;/a&gt;, &lt;a href=&quot;https://pi.dev/&quot;&gt;pi&lt;/a&gt;, &lt;a href=&quot;https://github.com/agegr/pi-web&quot;&gt;pi-web&lt;/a&gt;, &lt;a href=&quot;https://just.systems/man/en/introduction.html&quot;&gt;just&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;To create &lt;em&gt;rooms&lt;/em&gt; for agents I&#39;m using Apple Containers, Apple Container uses a unique one-VM-per-container architecture on Apple silicon.
-So overall every container is a VM.&lt;/p&gt;
+&lt;p&gt;To create &lt;em&gt;rooms&lt;/em&gt; for agents I&#39;m using Apple&#39;s &lt;a href=&quot;https://github.com/apple/container&quot;&gt;container&lt;/a&gt; CLI. It uses a unique one-VM-per-container architecture on Apple silicon, so effectively every container is its own little VM. It speaks plain OCI - standard &lt;code&gt;Dockerfile&lt;/code&gt;s work as-is, no Docker Desktop fat VM in between.&lt;/p&gt;
 &lt;p&gt;The simplified scheme how it works is below:&lt;/p&gt;
 &lt;p&gt;&lt;picture&gt;&lt;source type=&quot;image/gif&quot; srcset=&quot;https://rkiselenko.dev/img/htQdJ0VYaX-900.gif 900w&quot;&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://rkiselenko.dev/img/htQdJ0VYaX-900.avif 900w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://rkiselenko.dev/img/htQdJ0VYaX-900.webp 900w&quot;&gt;&lt;img src=&quot;https://rkiselenko.dev/img/htQdJ0VYaX-900.png&quot; alt=&quot;setup&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; width=&quot;900&quot; height=&quot;488&quot;&gt;&lt;/picture&gt;&lt;/p&gt;
+&lt;p&gt;The LLM stays on the Mac. The room is a Linux VM with no access to the Metal GPU, so the model can&#39;t live inside it. Instead I keep my models on the host, served by &lt;a href=&quot;https://omlx.ai/&quot;&gt;oMLX&lt;/a&gt; - a local inference server built for Apple silicon that pages KV-cache blocks to the SSD. That&#39;s exactly what coding agents need: big contexts and a lot of repeated prefixes, all of it staying on the Mac.&lt;/p&gt;
+&lt;p&gt;oMLX exposes an OpenAI-compatible API (and an Anthropic-compatible one) on port 8000, and its dashboard shows you how to wire up any client. From inside the container the Mac is reachable at &lt;code&gt;host.container.internal&lt;/code&gt;, so pi&#39;s model config looks like this:&lt;/p&gt;
+&lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;models.json (excerpt) &lt;/b&gt;&lt;/div&gt;
+&lt;pre class=&quot;language-json&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-json&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token property&quot;&gt;&quot;providers&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token property&quot;&gt;&quot;oMLX&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;baseUrl&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;http://host.container.internal:8000/v1&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;openai-completions&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;token property&quot;&gt;&quot;models&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token property&quot;&gt;&quot;id&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Qwen3.8-27B&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token property&quot;&gt;&quot;reasoning&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token property&quot;&gt;&quot;contextWindow&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;262144&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I configure this once on the host. pi keeps everything - models, settings, sessions, skills - in a single &lt;code&gt;~/.pi/agent&lt;/code&gt; folder; I keep that folder on the Mac and mount it into every room, so each new minion wakes up already wired to my brain.&lt;/p&gt;
 &lt;p&gt;In every project I have a &lt;code&gt;Dockerfile.agents&lt;/code&gt;:&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;Dockerfile.agents &lt;/b&gt;&lt;/div&gt;
 &lt;pre class=&quot;language-docker&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-docker&quot;&gt;&lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;FROM&lt;/span&gt; node:lts-alpine3.24&lt;/span&gt;
@@ -41,23 +55,34 @@ So overall every container is a VM.&lt;/p&gt;
 &lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;ENV&lt;/span&gt; NEXT_TELEMETRY_DISABLED=1&lt;/span&gt;
 
 &lt;span class=&quot;token instruction&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;CMD&lt;/span&gt; [&lt;span class=&quot;token string&quot;&gt;&quot;pi-web&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;-p&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;7777&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;-H&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;0.0.0.0&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;--no-open&quot;&lt;/span&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Inside the room the agent runs as &lt;a href=&quot;https://github.com/agegr/pi-web&quot;&gt;pi-web&lt;/a&gt; - pi&#39;s coding agent with a web UI. Port 7777 is mapped to the Mac, so I open &lt;code&gt;http://localhost:7777&lt;/code&gt; in a browser and talk to the minion from my usual seat.&lt;/p&gt;
 &lt;p&gt;A &lt;code&gt;justfile&lt;/code&gt; to run commands:&lt;/p&gt;
 &lt;div class=&quot;codetitle codetitle-left&quot;&gt;&lt;b&gt;justfile &lt;/b&gt;&lt;/div&gt;
 &lt;pre class=&quot;language-makefile&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-makefile&quot;&gt;&lt;span class=&quot;token target symbol&quot;&gt;@_default&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
-        just --list
+	just --list
 
 &lt;span class=&quot;token target symbol&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
-&lt;span class=&quot;token target symbol&quot;&gt;        container run --name project --rm -it -p 8080&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;8080 -p 7777&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;7777 &#92;
-&lt;span class=&quot;token target symbol&quot;&gt;        -v &lt;span class=&quot;token variable&quot;&gt;$HOME/agent&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/home/node/.pi/agent &#92;
-        --mount type&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;volume,target&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;/home/node/pnpm-store &#92;
-&lt;span class=&quot;token target symbol&quot;&gt;        -v &lt;span class=&quot;token variable&quot;&gt;$&lt;/span&gt;(pwd)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/home/node/project local/project
+&lt;span class=&quot;token target symbol&quot;&gt;	container run --name project --rm -it -p 8080&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;8080 -p 7777&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;7777 &#92;
+&lt;span class=&quot;token target symbol&quot;&gt;	-v &lt;span class=&quot;token variable&quot;&gt;$HOME/agent&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/home/node/.pi/agent &#92;
+	--mount type&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;volume,target&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;/home/node/pnpm-store &#92;
+&lt;span class=&quot;token target symbol&quot;&gt;	-v &lt;span class=&quot;token variable&quot;&gt;$&lt;/span&gt;(pwd)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/home/node/project local/project
 
 &lt;span class=&quot;token target symbol&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
-        container build -t local/project -f Dockerfile.agents&lt;/code&gt;&lt;/pre&gt;
+	container build -t local/project -f Dockerfile.agents&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Two commands in total. &lt;code&gt;just build&lt;/code&gt; compiles the room image once, &lt;code&gt;just run&lt;/code&gt; boots a fresh room on top of it. Worth noticing in the flags:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;--rm&lt;/code&gt; - the whole point of this article: when the room stops, everything inside (garbage included) is gone&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-v $(pwd):/home/node/project&lt;/code&gt; - the only real code the minion can touch&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;--mount type=volume,target=/home/node/pnpm-store&lt;/code&gt; - a throwaway cache volume, so &lt;code&gt;pnpm install&lt;/code&gt; doesn&#39;t start from zero; wipe it whenever you want a truly clean slate&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-p 8080:8080 -p 7777:7777&lt;/code&gt; - the two windows into the room: your dev server and pi-web&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;Dependency. I ask the agent to install all required dependencies (compilers, linters etc) in the container and almost always the agent is able to launch the project.&lt;/p&gt;
 &lt;p&gt;Dev server. If I need to check the dev server I&#39;m asking the agent to launch it on the 8080 port, because the port is mapped to the host.&lt;/p&gt;
-&lt;p&gt;Pi sessions. Every session pi has is stored in the &lt;code&gt;~/.pi&lt;/code&gt; folder in the container.&lt;/p&gt;
+&lt;p&gt;Pi sessions. Every session pi has is stored in the &lt;code&gt;~/.pi/agent/sessions&lt;/code&gt; folder - which is mounted from the host, so conversations survive even after the room is gone.&lt;/p&gt;
 &lt;p&gt;Access to GitHub. I&#39;m using a restricted token and pass that token to the container in order to get read/write access to GitHub.&lt;/p&gt;
+&lt;p&gt;YOLO mode is only safe because the blast radius is small. The minion runs as an unprivileged user, sees only the mounted project folder and my LLM API, and holds a GitHub token scoped to exactly what it needs. When a minion screws something up, it screws it up inside the room - my Mac stays a temple.&lt;/p&gt;
+&lt;p&gt;Done? Stop the container and that&#39;s it - &lt;code&gt;--rm&lt;/code&gt; takes the whole room: scripts, installed tools, half-broken node_modules, everything. The pnpm-store volume is the only survivor, and it can be deleted too if you want a fully clean slate.&lt;/p&gt;
+&lt;p&gt;Fun fact: this article was drafted by a minion inside one of these rooms - I just validated the work, like you&#39;re supposed to.&lt;/p&gt;
 &lt;p&gt;Happy coding!&lt;/p&gt;
 </content>
 	</entry>
