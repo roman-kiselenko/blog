@@ -57,11 +57,6 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
@@ -229,5 +224,10 @@
 	<url>
 		<loc>https://rkiselenko.dev/blog/disposable-envs-for-agents/</loc>
 		<lastmod>2026-09-06</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/</loc>
+		<lastmod>2026-09-28</lastmod>
 	</url>
 </urlset>
