@@ -77,6 +77,21 @@
 	</url>
 	
 	<url>
+		<loc>https://rkiselenko.dev/tags/llm/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/k8s/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/rag/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
 		<loc>https://rkiselenko.dev/tags/crio/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
@@ -93,21 +108,6 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/tags/kubernetes/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/k8s/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/llm/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/rag/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
@@ -132,12 +132,7 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/apple-container-machine/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/apple-containers/</loc>
+		<loc>https://rkiselenko.dev/tags/lima/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
@@ -157,7 +152,12 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/lima/</loc>
+		<loc>https://rkiselenko.dev/tags/apple-container-machine/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/apple-containers/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
