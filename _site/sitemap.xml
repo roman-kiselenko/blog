@@ -112,27 +112,17 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/yaml/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/json/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
-		<loc>https://rkiselenko.dev/tags/cue/</loc>
-		<lastmod>2026-03-09</lastmod>
-	</url>
-	
-	<url>
 		<loc>https://rkiselenko.dev/tags/vm/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/lima/</loc>
+		<loc>https://rkiselenko.dev/tags/apple-container-machine/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/apple-containers/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
@@ -152,12 +142,22 @@
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/apple-container-machine/</loc>
+		<loc>https://rkiselenko.dev/tags/yaml/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
 	<url>
-		<loc>https://rkiselenko.dev/tags/apple-containers/</loc>
+		<loc>https://rkiselenko.dev/tags/json/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/cue/</loc>
+		<lastmod>2026-03-09</lastmod>
+	</url>
+	
+	<url>
+		<loc>https://rkiselenko.dev/tags/lima/</loc>
 		<lastmod>2026-03-09</lastmod>
 	</url>
 	
@@ -228,6 +228,6 @@
 	
 	<url>
 		<loc>https://rkiselenko.dev/</loc>
-		<lastmod>2026-10-01</lastmod>
+		<lastmod>2026-10-27</lastmod>
 	</url>
 </urlset>
